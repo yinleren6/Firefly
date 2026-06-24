@@ -1,0 +1,244 @@
+---
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+---
+
+<MainGridLayout title="访问统计">
+  <div class="card-base p-6">
+    <h2 class="font-bold text-xl mb-6">访问统计</h2>
+
+    <!-- 概览 -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-(--primary)/5 rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-(--primary)" id="stat-total">-</div>
+        <div class="text-sm text-neutral-500 mt-1">总访问</div>
+      </div>
+      <div class="bg-(--primary)/5 rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-(--primary)" id="stat-uv">-</div>
+        <div class="text-sm text-neutral-500 mt-1">独立访客</div>
+      </div>
+      <div class="bg-(--primary)/5 rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-(--primary)" id="stat-today">-</div>
+        <div class="text-sm text-neutral-500 mt-1">今日访问</div>
+      </div>
+      <div class="bg-(--primary)/5 rounded-xl p-4 text-center">
+        <div class="text-2xl font-bold text-(--primary)" id="stat-avg">-</div>
+        <div class="text-sm text-neutral-500 mt-1">日均(30天)</div>
+      </div>
+    </div>
+
+    <!-- 趋势图 -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg">访问趋势</h3>
+        <div class="flex gap-2">
+          <button class="btn-regular text-sm px-3 py-1 rounded-lg period-btn active" data-days="7">7天</button>
+          <button class="btn-regular text-sm px-3 py-1 rounded-lg period-btn" data-days="30">30天</button>
+          <button class="btn-regular text-sm px-3 py-1 rounded-lg period-btn" data-days="90">90天</button>
+        </div>
+      </div>
+      <div class="relative" style="height:300px">
+        <canvas id="chart-daily"></canvas>
+      </div>
+    </div>
+
+    <!-- 排行 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="font-bold text-lg mb-3">热门文章</h3>
+        <div id="top-posts" class="space-y-2"></div>
+      </div>
+      <div>
+        <h3 class="font-bold text-lg mb-3">来源 Referrer</h3>
+        <div id="top-referrers" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>
+
+<script>
+function $(id) { return document.getElementById(id); }
+
+async function loadOverview() {
+  const res = await fetch("/api/view/");
+  if (!res.ok) return;
+  const data = await res.json();
+  $("stat-total").textContent = data.total?.toLocaleString() ?? "-";
+  $("stat-uv").textContent = data.uv?.toLocaleString() ?? "-";
+}
+
+async function loadDaily(days) {
+  const res = await fetch(`/api/stats/?type=daily&days=${days}`);
+  if (!res.ok) return;
+  const rows = await res.json();
+
+  const labels = rows.map(r => r.date.slice(5));
+  const pvData = rows.map(r => r.count);
+  const uvData = rows.map(r => r.uv);
+
+  // today & avg
+  if (rows.length > 0) {
+    const last = rows[rows.length - 1];
+    $("stat-today").textContent = last.count?.toLocaleString() ?? "-";
+    const avg = Math.round(rows.reduce((s, r) => s + r.count, 0) / rows.length);
+    $("stat-avg").textContent = avg?.toLocaleString() ?? "-";
+  }
+
+  // draw chart
+  drawChart(labels, pvData, uvData);
+}
+
+let chart = null;
+function drawChart(labels, pvData, uvData) {
+  const canvas = $("chart-daily");
+  if (!canvas) return;
+
+  if (chart) { chart.destroy(); chart = null; }
+
+  const hue = getComputedStyle(document.documentElement).getPropertyValue("--hue").trim() || "210";
+  const primary = `hsl(${hue}, 55%, 55%)`;
+  const primaryLight = `hsl(${hue}, 55%, 55%, 0.1)`;
+
+  // Simple inline chart using canvas
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width = canvas.parentElement.clientWidth;
+  const h = canvas.height = 300;
+  const pad = { top: 20, right: 20, bottom: 30, left: 50 };
+  const cw = w - pad.left - pad.right;
+  const ch = h - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (!pvData.length) {
+    ctx.fillStyle = "#999";
+    ctx.font = "14px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("暂无数据", w / 2, h / 2);
+    return;
+  }
+
+  const maxPv = Math.max(...pvData, 1);
+  const maxUv = Math.max(...uvData, 1);
+  const stepY = Math.ceil(maxPv / 5);
+
+  // grid lines
+  ctx.strokeStyle = "oklch(0.9 0 0)";
+  ctx.lineWidth = 1;
+  ctx.font = "11px system-ui";
+  ctx.fillStyle = "#999";
+  ctx.textAlign = "right";
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.top + ch - (ch * i / 5);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+    ctx.fillText((stepY * i).toString(), pad.left - 8, y + 4);
+  }
+
+  // bars
+  const barW = Math.min(24, cw / labels.length - 2);
+  const gap = (cw - barW * labels.length) / (labels.length + 1);
+
+  pvData.forEach((v, i) => {
+    const x = pad.left + gap + i * (barW + gap);
+    const barH = (v / maxPv) * ch;
+    const y = pad.top + ch - barH;
+
+    // bar
+    ctx.fillStyle = primary;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barW, barH, [3, 3, 0, 0]);
+    ctx.fill();
+
+    // label
+    ctx.fillStyle = "#999";
+    ctx.font = "10px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(labels[i], x + barW / 2, h - pad.bottom + 16);
+  });
+
+  // UV line
+  if (uvData.some(v => v > 0)) {
+    ctx.strokeStyle = primary;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    uvData.forEach((v, i) => {
+      const x = pad.left + gap + i * (barW + gap) + barW / 2;
+      const y = pad.top + ch - (v / maxPv) * ch;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // dots
+    uvData.forEach((v, i) => {
+      const x = pad.left + gap + i * (barW + gap) + barW / 2;
+      const y = pad.top + ch - (v / maxPv) * ch;
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = primary;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+  }
+}
+
+async function loadTopPosts(days) {
+  const res = await fetch(`/api/stats/?type=top&days=${days}`);
+  if (!res.ok) return;
+  const rows = await res.json();
+  const el = $("top-posts");
+  el.innerHTML = rows.map((r, i) =>
+    `<div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition">
+      <span class="flex items-center gap-2 min-w-0">
+        <span class="text-xs font-bold text-(--primary) w-5 shrink-0">${i + 1}</span>
+        <span class="text-sm truncate">${r.path}</span>
+      </span>
+      <span class="text-sm font-bold shrink-0 ml-2">${r.count}</span>
+    </div>`
+  ).join("");
+}
+
+async function loadReferrers(days) {
+  const res = await fetch(`/api/stats/?type=referrer&days=${days}`);
+  if (!res.ok) return;
+  const rows = await res.json();
+  const el = $("top-referrers");
+  el.innerHTML = rows.map(r =>
+    `<div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition">
+      <span class="text-sm truncate">${r.referrer}</span>
+      <span class="text-sm font-bold shrink-0 ml-2">${r.count}</span>
+    </div>`
+  ).join("");
+}
+
+let currentDays = 7;
+async function loadAll(days) {
+  currentDays = days;
+  loadDaily(days);
+  loadTopPosts(days);
+  loadReferrers(days);
+}
+
+loadOverview();
+loadAll(7);
+
+// period buttons
+document.querySelectorAll(".period-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".period-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    loadAll(parseInt(btn.dataset.days));
+  });
+});
+</script>
+
+<style>
+  .period-btn.active {
+    background: var(--primary) !important;
+    color: white !important;
+  }
+</style>
