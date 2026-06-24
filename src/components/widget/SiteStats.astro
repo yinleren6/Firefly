@@ -138,6 +138,28 @@ const stats = [
         </div>
       </div>
     ))}
+    <div class="flex items-center justify-between px-3 py-1.5 hidden" id="stat-row-total-pv">
+      <div class="flex items-center gap-2.5">
+        <div class="text-(--primary) text-xl">
+          <Icon is:inline name="material-symbols:visibility-outline" />
+        </div>
+        <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">{i18n(I18nKey.siteStatsPageViews)}</span>
+      </div>
+      <div class="flex items-center">
+        <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-stat-id="total-pv"></span>
+      </div>
+    </div>
+    <div class="flex items-center justify-between px-3 py-1.5 hidden" id="stat-row-total-uv">
+      <div class="flex items-center gap-2.5">
+        <div class="text-(--primary) text-xl">
+          <Icon is:inline name="material-symbols:person-outline" />
+        </div>
+        <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm">独立访客</span>
+      </div>
+      <div class="flex items-center">
+        <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-stat-id="total-uv"></span>
+      </div>
+    </div>
   </div>
 </WidgetLayout>
 
