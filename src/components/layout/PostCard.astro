@@ -264,7 +264,7 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
   }
 
   :global(.list-mode) .no-cover .post-card-content {
-    width: calc(100% - 52px - 12px) !important;
+    width: calc(100% - var(--coverWidth) - 1.5rem) !important;
   }
 
   :global(.list-mode) .post-card-enter-btn {
@@ -320,7 +320,7 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
     }
 
     :global(.list-mode) .no-cover .post-card-content {
-      width: calc(100% - 52px - 12px) !important;
+      width: calc(100% - var(--coverWidth) - 1.5rem) !important;
     }
 
     :global(.list-mode) .post-card-enter-btn {
@@ -370,7 +370,7 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
   }
 
   :global(.grid-mode) .no-cover .post-card-content {
-    width: calc(100% - 52px - 12px) !important;
+    width: calc(100% - var(--coverWidth) - 1.5rem) !important;
   }
 
   :global(.grid-mode) .post-card-enter-btn {

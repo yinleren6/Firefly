@@ -1,12 +1,16 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 export const prerender = false;
 
 const BOT_PATTERN =
   /bot|crawl|spider|scraper|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot/i;
 
-function getDb(): D1Database | null {
-  return (env.DB as D1Database) ?? null;
+async function getDb(): Promise<D1Database | null> {
+  try {
+    const { env } = await import("cloudflare:workers");
+    return (env.DB as D1Database) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function hashIp(ip: string): Promise<string> {
@@ -17,9 +21,9 @@ async function hashIp(ip: string): Promise<string> {
     .slice(0, 16);
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request }) => {
   try {
-    const db = getDb();
+    const db = await getDb();
     if (!db) return Response.json({ error: "DB not available" }, { status: 500 });
 
     const { path } = await request.json();
@@ -49,40 +53,40 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 };
 
-export const GET: APIRoute = async ({ url, locals }) => {
+export const GET: APIRoute = async ({ url }) => {
   try {
-    const db = getDb();
+    const db = await getDb();
     if (!db) return Response.json({ error: "DB not available" }, { status: 500 });
 
-  const path = url.searchParams.get("path");
+    const path = url.searchParams.get("path");
 
-  if (!path) {
-    const [total, unique] = await Promise.all([
+    if (!path) {
+      const [total, unique] = await Promise.all([
+        db
+          .prepare("SELECT COUNT(*) as total FROM pageviews WHERE is_crawler = 0")
+          .first<{ total: number }>(),
+        db
+          .prepare("SELECT COUNT(DISTINCT ip_hash) as count FROM pageviews WHERE is_crawler = 0 AND ip_hash != ''")
+          .first<{ count: number }>(),
+      ]);
+      return Response.json({ total: total?.total ?? 0, uv: unique?.count ?? 0 });
+    }
+
+    const [pvResult, uvResult] = await Promise.all([
       db
-        .prepare("SELECT COUNT(*) as total FROM pageviews WHERE is_crawler = 0")
-        .first<{ total: number }>(),
+        .prepare("SELECT COUNT(*) as count FROM pageviews WHERE path = ? AND is_crawler = 0")
+        .bind(path)
+        .first<{ count: number }>(),
       db
-        .prepare("SELECT COUNT(DISTINCT ip_hash) as count FROM pageviews WHERE is_crawler = 0 AND ip_hash != ''")
+        .prepare("SELECT COUNT(DISTINCT ip_hash) as count FROM pageviews WHERE path = ? AND is_crawler = 0 AND ip_hash != ''")
+        .bind(path)
         .first<{ count: number }>(),
     ]);
-    return Response.json({ total: total?.total ?? 0, uv: unique?.count ?? 0 });
-  }
 
-  const [pvResult, uvResult] = await Promise.all([
-    db
-      .prepare("SELECT COUNT(*) as count FROM pageviews WHERE path = ? AND is_crawler = 0")
-      .bind(path)
-      .first<{ count: number }>(),
-    db
-      .prepare("SELECT COUNT(DISTINCT ip_hash) as count FROM pageviews WHERE path = ? AND is_crawler = 0 AND ip_hash != ''")
-      .bind(path)
-      .first<{ count: number }>(),
-  ]);
-
-  return Response.json({
-    count: pvResult?.count ?? 0,
-    uv: uvResult?.count ?? 0,
-  });
+    return Response.json({
+      count: pvResult?.count ?? 0,
+      uv: uvResult?.count ?? 0,
+    });
   } catch (e) {
     return Response.json({ error: String(e) }, { status: 500 });
   }
