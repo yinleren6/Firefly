@@ -45,6 +45,20 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		url: "#",
 		icon: "material-symbols:person",
 		children: [
+			// 游戏
+			{
+				name: "游戏",
+				url: "/game/",
+				icon: "material-symbols:stadia-controller",
+			},
+
+			// 工具
+			{
+				name: "工具",
+				url: "/tools/",
+				icon: "material-symbols:build",
+			},
+
 			// 相册
 			LinkPresets.Gallery,
 

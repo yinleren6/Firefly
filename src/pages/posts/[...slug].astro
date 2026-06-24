@@ -194,7 +194,7 @@ const relatedPosts = await getRelatedPosts(entry, 5);
             }
           </div>
         </div>
-        <div class="flex flex-row items-center" id="post-view-count">
+        <div class="flex flex-row items-center hidden" id="post-view-count">
           <div
             class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2"
           >
@@ -203,7 +203,7 @@ const relatedPosts = await getRelatedPosts(entry, 5);
               <circle cx="12" cy="12" r="3" />
             </svg>
           </div>
-          <div class="text-sm" id="view-count-display">-</div>
+          <div class="text-sm" id="view-count-display"></div>
         </div>
         {entry.data.password && (
           <div class="flex flex-row items-center">
@@ -220,26 +220,32 @@ const relatedPosts = await getRelatedPosts(entry, 5);
       </div>
       <script>
       (function() {
-        const display = document.getElementById("view-count-display");
-        if (!display) return;
         const path = window.location.pathname;
         fetch("/api/view/?path=" + encodeURIComponent(path))
           .then(r => r.json())
           .then(data => {
-            display.textContent = (data.count || 0) + " 次阅读";
+            if (data.count > 0) {
+              const row = document.getElementById("post-view-count");
+              const display = document.getElementById("view-count-display");
+              if (row) row.classList.remove("hidden");
+              if (display) display.textContent = data.count + " 次阅读";
+            }
           })
-          .catch(() => { display.textContent = "-"; });
+          .catch(() => {});
       })();
       document.addEventListener("astro:page-load", function() {
-        const display = document.getElementById("view-count-display");
-        if (!display) return;
         const path = window.location.pathname;
         fetch("/api/view/?path=" + encodeURIComponent(path))
           .then(r => r.json())
           .then(data => {
-            display.textContent = (data.count || 0) + " 次阅读";
+            if (data.count > 0) {
+              const row = document.getElementById("post-view-count");
+              const display = document.getElementById("view-count-display");
+              if (row) row.classList.remove("hidden");
+              if (display) display.textContent = data.count + " 次阅读";
+            }
           })
-          .catch(() => { display.textContent = "-"; });
+          .catch(() => {});
       });
       </script>
 

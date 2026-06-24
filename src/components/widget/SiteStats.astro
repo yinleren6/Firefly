@@ -114,7 +114,7 @@ const stats = [
 <WidgetLayout name={i18n(I18nKey.siteStats)} showTitle={showTitle} id="site-stats" class={className} style={style}>
   <div class="flex flex-col gap-2">
     {stats.map((stat) => (
-      <div class="flex items-center justify-between px-3 py-1.5">
+      <div class="flex items-center justify-between px-3 py-1.5" data-stat-row-id={stat.id}>
         <div class="flex items-center gap-2.5">
           <div class="text-(--primary) text-xl">
             <Icon is:inline name={stat.icon} />
@@ -183,10 +183,18 @@ const stats = [
       const res = await fetch("/api/view/");
       if (res.ok) {
         const data = await res.json();
-        const pvEls = document.querySelectorAll('[data-stat-id="total-pv"]');
-        pvEls.forEach((el) => { el.textContent = data.total?.toLocaleString() ?? "--"; });
-        const uvEls = document.querySelectorAll('[data-stat-id="total-uv"]');
-        uvEls.forEach((el) => { el.textContent = data.uv?.toLocaleString() ?? "--"; });
+        const pvRow = document.getElementById("stat-row-total-pv");
+        const pvEl = document.querySelector('[data-stat-id="total-pv"]');
+        if (data.total > 0 && pvRow && pvEl) {
+          pvEl.textContent = data.total.toLocaleString();
+          pvRow.classList.remove("hidden");
+        }
+        const uvRow = document.getElementById("stat-row-total-uv");
+        const uvEl = document.querySelector('[data-stat-id="total-uv"]');
+        if (data.uv > 0 && uvRow && uvEl) {
+          uvEl.textContent = data.uv.toLocaleString();
+          uvRow.classList.remove("hidden");
+        }
       }
     } catch {}
   }
