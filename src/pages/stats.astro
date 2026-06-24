@@ -189,17 +189,22 @@ function drawChart(labels, pvData, uvData) {
 async function loadTopPosts(days) {
   const res = await fetch(`/api/stats/?type=top&days=${days}`);
   if (!res.ok) return;
-  const rows = await res.json();
+  const rows = (await res.json()).slice(0, 10);
+  const maxCount = rows.length > 0 ? rows[0].count : 1;
   const el = $("top-posts");
-  el.innerHTML = rows.map((r, i) =>
-    `<div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition">
-      <span class="flex items-center gap-2 min-w-0">
-        <span class="text-xs font-bold text-(--primary) w-5 shrink-0">${i + 1}</span>
-        <span class="text-sm truncate">${decodeURIComponent(r.path)}</span>
-      </span>
-      <span class="text-sm font-bold shrink-0 ml-2">${r.count}</span>
-    </div>`
-  ).join("");
+  el.innerHTML = rows.map((r) => {
+    const path = decodeURIComponent(r.path);
+    const pct = (r.count / maxCount * 100).toFixed(0);
+    return `<a href="${r.path}" class="block py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition group">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-sm truncate group-hover:text-(--primary) transition">${path}</span>
+        <span class="text-xs font-bold shrink-0 ml-2">${r.count}</span>
+      </div>
+      <div class="w-full h-1.5 rounded-full bg-(--primary)/10 overflow-hidden">
+        <div class="h-full rounded-full bg-(--primary) transition-all" style="width:${pct}%"></div>
+      </div>
+    </a>`;
+  }).join("");
 }
 
 async function loadReferrers(days) {
