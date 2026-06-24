@@ -32,6 +32,9 @@ yarn.lock
 .claude
 .vscode
 
+# wrangler local cache
+.wrangler/
+
 # docs
 Firefly-docs/
 
