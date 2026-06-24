@@ -1,11 +1,12 @@
 import type { APIRoute } from "astro";
+import { env } from "cloudflare:workers";
 export const prerender = false;
 
 const BOT_PATTERN =
   /bot|crawl|spider|scraper|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot/i;
 
-function getDb(locals: App.Locals): D1Database | null {
-  return (locals.runtime?.env?.DB as D1Database) ?? null;
+function getDb(): D1Database | null {
+  return (env.DB as D1Database) ?? null;
 }
 
 async function hashIp(ip: string): Promise<string> {
@@ -17,36 +18,41 @@ async function hashIp(ip: string): Promise<string> {
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const db = getDb(locals);
-  if (!db) return new Response(null, { status: 500 });
+  try {
+    const db = getDb();
+    if (!db) return Response.json({ error: "DB not available" }, { status: 500 });
 
-  const { path } = await request.json();
-  if (!path || typeof path !== "string") {
-    return Response.json({ error: "path is required" }, { status: 400 });
+    const { path } = await request.json();
+    if (!path || typeof path !== "string") {
+      return Response.json({ error: "path is required" }, { status: 400 });
+    }
+
+    const ip = request.headers.get("CF-Connecting-IP") || "";
+    const ua = request.headers.get("User-Agent") || "";
+    const referrer = request.headers.get("Referer") || "";
+    const isCrawler = BOT_PATTERN.test(ua) ? 1 : 0;
+    const ipHash = ip ? await hashIp(ip) : "";
+
+    await db
+      .prepare("INSERT INTO pageviews(path, ip_hash, referrer, is_crawler) VALUES(?, ?, ?, ?)")
+      .bind(path, ipHash, referrer, isCrawler)
+      .run();
+
+    const result = await db
+      .prepare("SELECT COUNT(*) as count FROM pageviews WHERE path = ? AND is_crawler = 0")
+      .bind(path)
+      .first<{ count: number }>();
+
+    return Response.json({ count: result?.count ?? 0 });
+  } catch (e) {
+    return Response.json({ error: String(e) }, { status: 500 });
   }
-
-  const ip = request.headers.get("CF-Connecting-IP") || "";
-  const ua = request.headers.get("User-Agent") || "";
-  const referrer = request.headers.get("Referer") || "";
-  const isCrawler = BOT_PATTERN.test(ua) ? 1 : 0;
-  const ipHash = ip ? await hashIp(ip) : "";
-
-  await db
-    .prepare("INSERT INTO pageviews(path, ip_hash, referrer, is_crawler) VALUES(?, ?, ?, ?)")
-    .bind(path, ipHash, referrer, isCrawler)
-    .run();
-
-  const result = await db
-    .prepare("SELECT COUNT(*) as count FROM pageviews WHERE path = ? AND is_crawler = 0")
-    .bind(path)
-    .first<{ count: number }>();
-
-  return Response.json({ count: result?.count ?? 0 });
 };
 
 export const GET: APIRoute = async ({ url, locals }) => {
-  const db = getDb(locals);
-  if (!db) return new Response(null, { status: 500 });
+  try {
+    const db = getDb();
+    if (!db) return Response.json({ error: "DB not available" }, { status: 500 });
 
   const path = url.searchParams.get("path");
 
@@ -77,4 +83,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
     count: pvResult?.count ?? 0,
     uv: uvResult?.count ?? 0,
   });
+  } catch (e) {
+    return Response.json({ error: String(e) }, { status: 500 });
+  }
 };
