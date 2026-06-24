@@ -32,11 +32,14 @@ import { i18n } from "@/i18n/translation";
     <div class="mb-8">
       <div class="flex items-center justify-between mb-3">
         <h3 class="font-bold text-lg">访问趋势</h3>
-        <div class="flex gap-2">
-          <button class="btn-regular text-sm px-3 py-1 rounded-lg period-btn active" data-days="7">7天</button>
-          <button class="btn-regular text-sm px-3 py-1 rounded-lg period-btn" data-days="30">30天</button>
-          <button class="btn-regular text-sm px-3 py-1 rounded-lg period-btn" data-days="90">90天</button>
-        </div>
+        <select id="period-select" class="btn-regular text-sm px-3 py-1 rounded-lg">
+          <option value="7">7天</option>
+          <option value="30" selected>30天</option>
+          <option value="180">6个月</option>
+          <option value="365">1年</option>
+          <option value="730">2年</option>
+          <option value="0">所有时间</option>
+        </select>
       </div>
       <div class="relative" style="height:300px">
         <canvas id="chart-daily"></canvas>
@@ -187,7 +190,7 @@ function drawChart(labels, pvData, uvData) {
     });
   }
 
-  // tooltip
+  // tooltip & hover
   let tooltip = canvas.parentElement.querySelector(".chart-tooltip");
   if (!tooltip) {
     tooltip = document.createElement("div");
@@ -196,47 +199,61 @@ function drawChart(labels, pvData, uvData) {
     canvas.parentElement.style.position = "relative";
     canvas.parentElement.appendChild(tooltip);
   }
+  const snapshot = ctx.getImageData(0, 0, w, h);
+  let lastHit = null;
   canvas.onmousemove = function(e) {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
     const dpr = canvas.width / rect.width;
     const hit = bars.find(b => mx * dpr >= b.x && mx * dpr <= b.x + b.w);
+    if (hit !== lastHit) {
+      ctx.putImageData(snapshot, 0, 0);
+      if (hit) {
+        ctx.fillStyle = "oklch(1 0 0 / 0.12)";
+        ctx.beginPath();
+        ctx.roundRect(hit.x, hit.y, hit.w, hit.h, [3, 3, 0, 0]);
+        ctx.fill();
+        ctx.strokeStyle = primary;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(hit.x, hit.y, hit.w, hit.h, [3, 3, 0, 0]);
+        ctx.stroke();
+      }
+      lastHit = hit;
+    }
     if (hit) {
       tooltip.style.display = "block";
       tooltip.style.left = mx + "px";
       tooltip.style.top = (my - 10) + "px";
       tooltip.textContent = hit.label + ": " + hit.value.toLocaleString() + " 次访问";
       canvas.style.cursor = "pointer";
-      // highlight bar
-      ctx.fillStyle = "oklch(1 0 0 / 0.12)";
-      ctx.beginPath();
-      ctx.roundRect(hit.x, hit.y, hit.w, hit.h, [3, 3, 0, 0]);
-      ctx.fill();
-      ctx.strokeStyle = primary;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.roundRect(hit.x, hit.y, hit.w, hit.h, [3, 3, 0, 0]);
-      ctx.stroke();
     } else {
       tooltip.style.display = "none";
       canvas.style.cursor = "default";
     }
   };
-  canvas.onmouseleave = function() { tooltip.style.display = "none"; };
+  canvas.onmouseleave = function() {
+    ctx.putImageData(snapshot, 0, 0);
+    lastHit = null;
+    tooltip.style.display = "none";
+  };
 }
 
 async function loadTopPosts(days) {
   const res = await fetch(`/api/stats/?type=top&days=${days}`);
   if (!res.ok) return;
-  const rows = (await res.json()).slice(0, 10);
+  const rows = await res.json();
   const maxCount = rows.length > 0 ? rows[0].count : 1;
   const el = $("top-posts");
   el.innerHTML = rows.map((r) => {
     const path = decodeURIComponent(r.path);
     const title = path.replace(/^\/posts\//, "").replace(/\/$/, "").split("/").pop() || path;
     const pct = (r.count / maxCount * 100).toFixed(0);
-    return `<a href="${r.path}" class="block py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition group">
+    const isLink = r.path.startsWith("/posts/");
+    const tag = isLink ? "a" : "div";
+    const attrs = isLink ? `href="${r.path}"` : "";
+    return `<${tag} ${attrs} class="block py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition group">
       <div class="flex items-center justify-between mb-1">
         <span class="text-sm truncate group-hover:text-(--primary) transition">${title}</span>
         <span class="text-xs font-bold shrink-0 ml-2">${r.count}</span>
@@ -244,7 +261,7 @@ async function loadTopPosts(days) {
       <div class="w-full h-1.5 rounded-full bg-(--primary)/10 overflow-hidden">
         <div class="h-full rounded-full bg-(--primary) transition-all" style="width:${pct}%"></div>
       </div>
-    </a>`;
+    </${tag}>`;
   }).join("");
 }
 
@@ -261,7 +278,7 @@ async function loadReferrers(days) {
   ).join("");
 }
 
-let currentDays = 7;
+let currentDays = 30;
 async function loadAll(days) {
   currentDays = days;
   loadDaily(days);
@@ -270,21 +287,18 @@ async function loadAll(days) {
 }
 
 loadOverview();
-loadAll(7);
+loadAll(30);
 
-// period buttons
-document.querySelectorAll(".period-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".period-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    loadAll(parseInt(btn.dataset.days));
-  });
+// period select
+document.getElementById("period-select").addEventListener("change", function() {
+  loadAll(parseInt(this.value));
 });
 </script>
 
 <style>
-  .period-btn.active {
-    background: var(--primary) !important;
-    color: white !important;
+  #period-select {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    cursor: pointer;
   }
 </style>
