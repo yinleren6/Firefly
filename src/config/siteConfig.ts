@@ -12,7 +12,7 @@ export const siteConfig: SiteConfig = {
 	subtitle: "嘻嘻",
 
 	// 站点 URL
-	site_url: "https://blog2.cn3.top",
+	site_url: "https://blog.cn3.top",
 
 	// 站点描述
 	description:

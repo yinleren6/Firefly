@@ -180,7 +180,7 @@ const stats = [
 
   async function fetchPageViews() {
     try {
-      const res = await fetch("/api/view");
+      const res = await fetch("/api/view/");
       if (res.ok) {
         const data = await res.json();
         const pvEls = document.querySelectorAll('[data-stat-id="total-pv"]');

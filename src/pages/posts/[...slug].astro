@@ -223,7 +223,7 @@ const relatedPosts = await getRelatedPosts(entry, 5);
         const display = document.getElementById("view-count-display");
         if (!display) return;
         const path = window.location.pathname;
-        fetch("/api/view?path=" + encodeURIComponent(path))
+        fetch("/api/view/?path=" + encodeURIComponent(path))
           .then(r => r.json())
           .then(data => {
             display.textContent = (data.count || 0) + " 次阅读";
@@ -234,7 +234,7 @@ const relatedPosts = await getRelatedPosts(entry, 5);
         const display = document.getElementById("view-count-display");
         if (!display) return;
         const path = window.location.pathname;
-        fetch("/api/view?path=" + encodeURIComponent(path))
+        fetch("/api/view/?path=" + encodeURIComponent(path))
           .then(r => r.json())
           .then(data => {
             display.textContent = (data.count || 0) + " 次阅读";
