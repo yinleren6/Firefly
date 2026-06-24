@@ -1655,3 +1655,17 @@ function disableAnimation() {
     requestAnimationFrame(initImageLoadFadeIn);
   });
 </script>
+
+<script>
+function trackPageview() {
+  const path = window.location.pathname;
+  fetch("/api/view", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path }),
+  }).catch(() => {});
+}
+trackPageview();
+document.addEventListener("astro:page-load", () => { setTimeout(trackPageview, 100); });
+document.addEventListener("swup:contentReplaced", () => { setTimeout(trackPageview, 100); });
+</script>

@@ -194,6 +194,17 @@ const relatedPosts = await getRelatedPosts(entry, 5);
             }
           </div>
         </div>
+        <div class="flex flex-row items-center" id="post-view-count">
+          <div
+            class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </div>
+          <div class="text-sm" id="view-count-display">-</div>
+        </div>
         {entry.data.password && (
           <div class="flex flex-row items-center">
             <div
@@ -207,6 +218,30 @@ const relatedPosts = await getRelatedPosts(entry, 5);
           </div>
         )}
       </div>
+      <script>
+      (function() {
+        const display = document.getElementById("view-count-display");
+        if (!display) return;
+        const path = window.location.pathname;
+        fetch("/api/view?path=" + encodeURIComponent(path))
+          .then(r => r.json())
+          .then(data => {
+            display.textContent = (data.count || 0) + " 次阅读";
+          })
+          .catch(() => { display.textContent = "-"; });
+      })();
+      document.addEventListener("astro:page-load", function() {
+        const display = document.getElementById("view-count-display");
+        if (!display) return;
+        const path = window.location.pathname;
+        fetch("/api/view?path=" + encodeURIComponent(path))
+          .then(r => r.json())
+          .then(data => {
+            display.textContent = (data.count || 0) + " 次阅读";
+          })
+          .catch(() => { display.textContent = "-"; });
+      });
+      </script>
 
       <!-- title -->
       <div class="relative onload-animation">

@@ -178,11 +178,31 @@ const stats = [
     }
   }
 
+  async function fetchPageViews() {
+    try {
+      const res = await fetch("/api/view");
+      if (res.ok) {
+        const data = await res.json();
+        const pvEls = document.querySelectorAll('[data-stat-id="total-pv"]');
+        pvEls.forEach((el) => { el.textContent = data.total?.toLocaleString() ?? "--"; });
+        const uvEls = document.querySelectorAll('[data-stat-id="total-uv"]');
+        uvEls.forEach((el) => { el.textContent = data.uv?.toLocaleString() ?? "--"; });
+      }
+    } catch {}
+  }
+
   // 页面加载时更新
   updateDynamicStats();
+  fetchPageViews();
 
   // 页面切换时重新更新
   document.addEventListener("swup:contentReplaced", () => {
     setTimeout(updateDynamicStats, 100);
+    setTimeout(fetchPageViews, 200);
+  });
+
+  document.addEventListener("astro:page-load", () => {
+    setTimeout(updateDynamicStats, 100);
+    setTimeout(fetchPageViews, 200);
   });
 </script>
