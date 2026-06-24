@@ -32,7 +32,7 @@ lang: zh_CN
 
 <summary>展开二维码</summary>
 
-![[泰拉瑞亚联机群.jpg]]
+![](/泰拉瑞亚联机群.jpg)
 
 </details>
 
