@@ -1657,7 +1657,11 @@ function disableAnimation() {
 </script>
 
 <script>
+let lastTrack = 0;
 function trackPageview() {
+  const now = Date.now();
+  if (now - lastTrack < 2000) return;
+  lastTrack = now;
   const path = window.location.pathname;
   fetch("/api/view/", {
     method: "POST",
@@ -1666,6 +1670,6 @@ function trackPageview() {
   }).catch(() => {});
 }
 trackPageview();
-document.addEventListener("astro:page-load", () => { setTimeout(trackPageview, 100); });
-document.addEventListener("swup:contentReplaced", () => { setTimeout(trackPageview, 100); });
+document.addEventListener("astro:page-load", () => { setTimeout(trackPageview, 200); });
+document.addEventListener("swup:contentReplaced", () => { setTimeout(trackPageview, 200); });
 </script>
