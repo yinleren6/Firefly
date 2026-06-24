@@ -141,10 +141,12 @@ function drawChart(labels, pvData, uvData) {
   const barW = Math.min(24, cw / labels.length - 2);
   const gap = (cw - barW * labels.length) / (labels.length + 1);
 
+  const bars = [];
   pvData.forEach((v, i) => {
     const x = pad.left + gap + i * (barW + gap);
     const barH = (v / maxPv) * ch;
     const y = pad.top + ch - barH;
+    bars.push({ x, y, w: barW, h: barH, value: v, label: labels[i] });
 
     // bar
     ctx.fillStyle = primary;
@@ -184,6 +186,44 @@ function drawChart(labels, pvData, uvData) {
       ctx.stroke();
     });
   }
+
+  // tooltip
+  let tooltip = canvas.parentElement.querySelector(".chart-tooltip");
+  if (!tooltip) {
+    tooltip = document.createElement("div");
+    tooltip.className = "chart-tooltip";
+    tooltip.style.cssText = "position:absolute;display:none;background:#333;color:#fff;font-size:12px;padding:4px 10px;border-radius:6px;pointer-events:none;z-index:10;white-space:nowrap;transform:translate(-50%,-100%);top:0;left:0";
+    canvas.parentElement.style.position = "relative";
+    canvas.parentElement.appendChild(tooltip);
+  }
+  canvas.onmousemove = function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const dpr = canvas.width / rect.width;
+    const hit = bars.find(b => mx * dpr >= b.x && mx * dpr <= b.x + b.w);
+    if (hit) {
+      tooltip.style.display = "block";
+      tooltip.style.left = mx + "px";
+      tooltip.style.top = (my - 10) + "px";
+      tooltip.textContent = hit.label + ": " + hit.value.toLocaleString() + " 次访问";
+      canvas.style.cursor = "pointer";
+      // highlight bar
+      ctx.fillStyle = "oklch(1 0 0 / 0.12)";
+      ctx.beginPath();
+      ctx.roundRect(hit.x, hit.y, hit.w, hit.h, [3, 3, 0, 0]);
+      ctx.fill();
+      ctx.strokeStyle = primary;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(hit.x, hit.y, hit.w, hit.h, [3, 3, 0, 0]);
+      ctx.stroke();
+    } else {
+      tooltip.style.display = "none";
+      canvas.style.cursor = "default";
+    }
+  };
+  canvas.onmouseleave = function() { tooltip.style.display = "none"; };
 }
 
 async function loadTopPosts(days) {
@@ -194,10 +234,11 @@ async function loadTopPosts(days) {
   const el = $("top-posts");
   el.innerHTML = rows.map((r) => {
     const path = decodeURIComponent(r.path);
+    const title = path.replace(/^\/posts\//, "").replace(/\/$/, "").split("/").pop() || path;
     const pct = (r.count / maxCount * 100).toFixed(0);
     return `<a href="${r.path}" class="block py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition group">
       <div class="flex items-center justify-between mb-1">
-        <span class="text-sm truncate group-hover:text-(--primary) transition">${path}</span>
+        <span class="text-sm truncate group-hover:text-(--primary) transition">${title}</span>
         <span class="text-xs font-bold shrink-0 ml-2">${r.count}</span>
       </div>
       <div class="w-full h-1.5 rounded-full bg-(--primary)/10 overflow-hidden">
