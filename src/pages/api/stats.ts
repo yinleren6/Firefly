@@ -31,7 +31,7 @@ export const GET: APIRoute = async ({ url }) => {
     if (type === "top") {
       const rows = await db
         .prepare(
-          "SELECT path, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= DATE('now', ? || ' days') GROUP BY path ORDER BY count DESC LIMIT 20"
+          "SELECT path, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND path LIKE '/posts/%' AND created_at >= DATE('now', ? || ' days') GROUP BY path ORDER BY count DESC LIMIT 20"
         )
         .bind(`-${days}`)
         .all<{ path: string; count: number }>();
@@ -41,11 +41,26 @@ export const GET: APIRoute = async ({ url }) => {
     if (type === "referrer") {
       const rows = await db
         .prepare(
-          "SELECT referrer, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND referrer != '' AND created_at >= DATE('now', ? || ' days') GROUP BY referrer ORDER BY count DESC LIMIT 10"
+          "SELECT referrer, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND referrer != '' AND created_at >= DATE('now', ? || ' days') GROUP BY referrer ORDER BY count DESC LIMIT 50"
         )
         .bind(`-${days}`)
         .all<{ referrer: string; count: number }>();
-      return Response.json(rows.results ?? []);
+      // Group by domain
+      const domainMap = new Map<string, number>();
+      for (const r of rows.results ?? []) {
+        try {
+          const hostname = new URL(r.referrer).hostname.replace(/^www\./, "");
+          domainMap.set(hostname, (domainMap.get(hostname) || 0) + r.count);
+        } catch {
+          const raw = r.referrer.replace(/^https?:\/\//, "").split("/")[0].replace(/^www\./, "");
+          if (raw) domainMap.set(raw, (domainMap.get(raw) || 0) + r.count);
+        }
+      }
+      const sorted = [...domainMap.entries()]
+        .map(([domain, count]) => ({ domain, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+      return Response.json(sorted);
     }
 
     return Response.json({ error: "unknown type" }, { status: 400 });

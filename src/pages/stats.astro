@@ -195,7 +195,7 @@ async function loadTopPosts(days) {
     `<div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition">
       <span class="flex items-center gap-2 min-w-0">
         <span class="text-xs font-bold text-(--primary) w-5 shrink-0">${i + 1}</span>
-        <span class="text-sm truncate">${r.path}</span>
+        <span class="text-sm truncate">${decodeURIComponent(r.path)}</span>
       </span>
       <span class="text-sm font-bold shrink-0 ml-2">${r.count}</span>
     </div>`
@@ -209,7 +209,7 @@ async function loadReferrers(days) {
   const el = $("top-referrers");
   el.innerHTML = rows.map(r =>
     `<div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition">
-      <span class="text-sm truncate">${r.referrer}</span>
+      <span class="text-sm truncate">${(r.domain || r.referrer)}</span>
       <span class="text-sm font-bold shrink-0 ml-2">${r.count}</span>
     </div>`
   ).join("");
