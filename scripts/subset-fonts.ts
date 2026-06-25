@@ -42,7 +42,7 @@ function getLocalSubsetFonts(): LocalSubsetFont[] {
 	const used = collectUsedFontCssVars(fontConfig);
 
 	// 建立 cssVariable → fontsList 条目的映射
-	const fontByCssVar = new Map<string, typeof fontsList[number]>();
+	const fontByCssVar = new Map<string, (typeof fontsList)[number]>();
 	for (const f of fontsList) {
 		if (f.cssVariable) fontByCssVar.set(f.cssVariable, f);
 	}
@@ -51,7 +51,9 @@ function getLocalSubsetFonts(): LocalSubsetFont[] {
 	for (const [cssVar, opts] of subsetEntries) {
 		// 跳过未被使用的字体，避免生成无用的子集文件
 		if (!used.has(cssVar)) {
-			console.log(`   ⏭ Skipping '${cssVar}' — not referenced in selected or any font region.`);
+			console.log(
+				`   ⏭ Skipping '${cssVar}' — not referenced in selected or any font region.`,
+			);
 			continue;
 		}
 
@@ -66,12 +68,14 @@ function getLocalSubsetFonts(): LocalSubsetFont[] {
 			if (publicPath === null) {
 				console.warn(
 					`   ⚠ Skipping variant with unexpected src path: "${rawSrc}".\n` +
-					`     Expected a path under public/ (e.g. "./public/assets/fonts/MyFont.woff2") or an absolute path (e.g. "/assets/fonts/MyFont.woff2").`
+						`     Expected a path under public/ (e.g. "./public/assets/fonts/MyFont.woff2") or an absolute path (e.g. "/assets/fonts/MyFont.woff2").`,
 				);
 				continue;
 			}
 			result.push({
-				id: `${f.name}-${v.weight || "default"}`.toLowerCase().replace(/\s+/g, "-"),
+				id: `${f.name}-${v.weight || "default"}`
+					.toLowerCase()
+					.replace(/\s+/g, "-"),
 				family: f.name,
 				src: publicPath,
 				weight: v.weight,
@@ -102,7 +106,9 @@ function extractTextFromHtml(html: string): string {
 		.replace(/&#39;/g, "'")
 		.replace(/&nbsp;/g, " ");
 	// 提取 alt、title、aria-label、placeholder 属性值
-	const attrMatches = html.matchAll(/(?:alt|title|aria-label|placeholder)=["']([^"']+)["']/gi);
+	const attrMatches = html.matchAll(
+		/(?:alt|title|aria-label|placeholder)=["']([^"']+)["']/gi,
+	);
 	for (const match of attrMatches) {
 		text += match[1];
 	}
@@ -128,11 +134,7 @@ async function collectChars(): Promise<string> {
 // ─── 子集生成 ────────────────────────────────────────────
 
 function contentHash(buffer: Buffer): string {
-	return crypto
-		.createHash("sha256")
-		.update(buffer)
-		.digest("hex")
-		.slice(0, 16);
+	return crypto.createHash("sha256").update(buffer).digest("hex").slice(0, 16);
 }
 
 /**
@@ -214,9 +216,7 @@ async function main() {
 		try {
 			await fs.access(fontPath);
 		} catch {
-			console.error(
-				`❌ Font file not found: ${fontPath} (src: ${font.src})`,
-			);
+			console.error(`❌ Font file not found: ${fontPath} (src: ${font.src})`);
 			continue;
 		}
 
@@ -230,9 +230,7 @@ async function main() {
 			chars = [...extraSet].join("");
 		}
 
-		console.log(
-			`⏳ Generating subset for '${font.id}' (${font.family})...`,
-		);
+		console.log(`⏳ Generating subset for '${font.id}' (${font.family})...`);
 
 		const fontBuffer = await fs.readFile(fontPath);
 		const originalFormat = detectFontFormat(fontPath);
