@@ -10,8 +10,6 @@ passwordHint: "提示: 来加群一起玩吧"
 lang: zh_CN
 ---
 
-# 游戏记录
-
 ## 泰拉瑞亚
 
 <details open>
