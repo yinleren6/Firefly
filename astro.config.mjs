@@ -1,4 +1,5 @@
 import { setMaxListeners } from "node:events";
+import pkg from "./package.json";
 import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
@@ -302,6 +303,9 @@ export default defineConfig({
 		}),
 	},
 	vite: {
+		define: {
+			__BLOG_VERSION__: JSON.stringify(pkg.version),
+		},
 		plugins: [tailwindcss()],
 		server: {
 			watch: {

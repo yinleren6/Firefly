@@ -278,6 +278,11 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
     height: 1.25rem !important;
   }
 
+  /* 移动端无封面卡片：文字封面垂直空间太小，加大比例 */
+  .no-cover .post-card-image {
+    aspect-ratio: 3/2;
+  }
+
   /* === Desktop List Mode overrides === */
   @media (min-width: 768px) {
     :global(.list-mode) .post-card-wrapper {

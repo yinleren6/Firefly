@@ -12,39 +12,22 @@ lang: zh_CN
 
 # 游戏记录
 
+## 泰拉瑞亚
+
 <details open>
 
-<summary>泰拉瑞亚 灾厄</summary>
+<summary>泰拉瑞亚多人联机</summary>
 
-|            |                                                                                                                              |
-| :--------: | :--------------------------------------------------------------------------------------------------------------------------: |
-|    版本    |                                                       1.4.5.6 传奇难度                                                       |
-|  开档时间  |                                                          2026-6-16                                                           |
-| 服务器地址 |                                                      `frp-cal.cn3.top`                                                       |
-| 服务器端口 |                                                           `45678`                                                            |
-| 服务器状态 | <span id="server-status">检测中...</span> <button id="refresh-status" class="server-refresh-btn" title="手动刷新">⟳</button> |
-|  当前玩家  |                                             <span id="server-players">--</span>                                              |
+| 版本 | 1.4.4.9 Tmodloader |  1.4.5.6 Vanilla  |
+| :--: | :----------------: | :---------------: |
+| 地址 | `frp-cal.cn3.top`  | `frp-dad.cn3.top` |
+| 端口 |      `45678`       |      `44183`      |
 
 </details>
 
-<details open>
+#### 联机群 [576081743](https://qm.qq.com/q/nHyctdPxL4)
 
-<summary>泰拉瑞亚 原版</summary>
-
-|            |                                                                                                                              |
-| :--------: | :--------------------------------------------------------------------------------------------------------------------------: |
-|    版本    |                                                       1.4.5.6 传奇难度                                                       |
-|  开档时间  |                                                          2026-6-16                                                           |
-| 服务器地址 |                                                      `frp-dad.cn3.top`                                                       |
-| 服务器端口 |                                                           `44183`                                                            |
-| 服务器状态 | <span id="server-status">检测中...</span> <button id="refresh-status" class="server-refresh-btn" title="手动刷新">⟳</button> |
-|  当前玩家  |                                             <span id="server-players">--</span>                                              |
-
-</details>
-
-### 联机群 [576081743](https://qm.qq.com/q/nHyctdPxL4)
-
-<details open>
+<details>
 
 <summary>展开二维码</summary>
 
@@ -100,60 +83,4 @@ lang: zh_CN
 
 </details>
 
-<script>
-  const STATUS_API = "/api/server-status/";
-  const AUTO_REFRESH_MS = 300000;
-  let checking = false;
-
-  function setStatus(status, playercount, maxplayers, players) {
-    const el = document.getElementById("server-status");
-    const playerEl = document.getElementById("server-players");
-    if (!el) return;
-    if (status === "online") {
-      el.innerHTML = '<span class="status-dot status-online"></span> 在线 - ' + playercount + '/' + maxplayers;
-      if (playerEl) playerEl.textContent = players.length > 0 ? players.join(", ") : "--";
-    } else if (status === "offline") {
-      el.innerHTML = '<span class="status-dot status-offline"></span> 离线';
-      if (playerEl) playerEl.textContent = "--";
-    } else {
-      el.innerHTML = '<span class="status-dot status-checking"></span> 检测中...';
-      if (playerEl) playerEl.textContent = "--";
-    }
-  }
-
-  async function checkServer() {
-    if (checking) return;
-    checking = true;
-    const btn = document.getElementById("refresh-status");
-    if (btn) btn.classList.add("refreshing");
-    setStatus("checking", 0, 0, []);
-    try {
-      const res = await fetch(STATUS_API);
-      const data = await res.json();
-      setStatus(data.status, data.playercount, data.maxplayers, data.players ?? []);
-    } catch { setStatus("offline", 0, 0, []); }
-    finally { checking = false; if (btn) btn.classList.remove("refreshing"); }
-  }
-
-  function setup() {
-    if (!document.getElementById("server-status")) return;
-    checkServer();
-    const btn = document.getElementById("refresh-status");
-    if (btn) btn.addEventListener("click", checkServer);
-    setInterval(checkServer, AUTO_REFRESH_MS);
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setup);
-  else setup();
-  document.addEventListener("swup:contentReplaced", setup);
-</script>
-
-<style>
-  .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 4px; margin-top: -2px; }
-  .status-online { background-color: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5); }
-  .status-offline { background-color: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
-  .status-checking { background-color: #6b7280; }
-  .server-refresh-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--secondary); cursor: pointer; font-size: 16px; line-height: 1; vertical-align: middle; margin-left: 8px; transition: all 0.2s; }
-  .server-refresh-btn:hover { background: var(--card-hover); color: var(--primary); border-color: var(--primary); }
-  .server-refresh-btn.refreshing { animation: spin 0.8s linear infinite; pointer-events: none; opacity: 0.6; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
+ 
