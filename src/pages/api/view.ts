@@ -4,6 +4,23 @@ export const prerender = false;
 const BOT_PATTERN =
 	/bot|crawl|spider|scraper|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot/i;
 
+// 内存限流：每 IP 每路径 30 秒内最多 10 次 POST
+const rateMap = new Map<string, { count: number; reset: number }>();
+const RL_MAX = 10;
+const RL_WIN = 30_000;
+
+function checkRateLimit(ip: string, path: string): boolean {
+	const key = ip + ":" + path;
+	const now = Date.now();
+	const entry = rateMap.get(key);
+	if (!entry || now > entry.reset) {
+		rateMap.set(key, { count: 1, reset: now + RL_WIN });
+		return true;
+	}
+	entry.count++;
+	return entry.count <= RL_MAX;
+}
+
 async function getDb(): Promise<D1Database | null> {
 	try {
 		const { env } = await import("cloudflare:workers");
@@ -26,16 +43,19 @@ async function hashIp(ip: string): Promise<string> {
 
 export const POST: APIRoute = async ({ request }) => {
 	try {
-		const db = await getDb();
-		if (!db)
-			return Response.json({ error: "DB not available" }, { status: 500 });
-
+		const ip = request.headers.get("CF-Connecting-IP") || "";
 		const { path } = await request.json();
 		if (!path || typeof path !== "string") {
 			return Response.json({ error: "path is required" }, { status: 400 });
 		}
+		if (!checkRateLimit(ip, path)) {
+			return Response.json({ error: "Too Many Requests" }, { status: 429 });
+		}
 
-		const ip = request.headers.get("CF-Connecting-IP") || "";
+		const db = await getDb();
+		if (!db)
+			return Response.json({ error: "DB not available" }, { status: 500 });
+
 		const ua = request.headers.get("User-Agent") || "";
 		const referrer = request.headers.get("Referer") || "";
 		const isCrawler = BOT_PATTERN.test(ua) ? 1 : 0;

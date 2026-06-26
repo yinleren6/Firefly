@@ -52,6 +52,9 @@ export const GET: APIRoute = async ({ url }) => {
 					r.path.includes("{canonicalSlug}")
 				)
 					continue;
+				// 跳过非文章页面（首页、列表页等）
+				if (r.path === "/" || r.path === "/posts/" || r.path === "/post/")
+					continue;
 				if (r.path.startsWith("/posts/")) {
 					posts.push(r);
 				} else {
