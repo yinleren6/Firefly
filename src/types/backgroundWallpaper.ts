@@ -56,7 +56,8 @@ export type BackgroundWallpaperConfig = {
 		// 壁纸轮播配置，横幅壁纸和全屏壁纸共享
 		carousel?: {
 			enable: boolean; // 是否启用壁纸轮播
-			interval?: number; // 轮播间隔时间，单位毫秒
+			interval?: number;
+			transitionDuration?: number; // 过渡动画时长，单位毫秒 // 轮播间隔时间，单位毫秒
 			transitionEffect?: "fade" | "zoom" | "slide" | "kenburns"; // 过渡效果: 'fade' 渐变 | 'zoom' 缩放 | 'slide' 滑动 | 'kenburns' 旋转木马
 			switchable?: boolean; // 是否允许用户通过控制面板切换壁纸轮播
 		};

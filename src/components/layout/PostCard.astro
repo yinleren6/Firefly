@@ -220,6 +220,10 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
 </div>
 
 <style define:vars={{ coverWidth, descriptionClampLines }}>
+  .post-card-wrapper {
+    min-height: 226px;
+  }
+
   .description-clamped {
     display: -webkit-box;
     -webkit-box-orient: vertical;

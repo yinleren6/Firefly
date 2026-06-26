@@ -265,6 +265,8 @@ const bannerCarouselInterval = Math.max(
 	backgroundWallpaper.common?.carousel?.interval ?? 5000,
 	3000,
 );
+const bannerCarouselTransitionDuration =
+	backgroundWallpaper.common?.carousel?.transitionDuration ?? 1000;
 const bannerCarouselEffect =
 	backgroundWallpaper.common?.carousel?.transitionEffect ?? "fade";
 const hasMultipleImages =
@@ -321,7 +323,7 @@ const hasMultipleImages =
     {hasMultipleImages ? (
     <!-- 轮播模式：渲染所有图片为 slide-item -->
     <div class:list={["relative h-full w-full bg-black", `effect-${bannerCarouselEffect}`]} id="banner-images-container"
-         style={`z-index: 5; --carousel-interval: ${bannerCarouselInterval}ms`}
+         style={`z-index: 5; --carousel-interval: ${bannerCarouselInterval}ms; --carousel-transition-duration: ${bannerCarouselTransitionDuration}ms`}
          data-carousel-enabled={bannerCarouselEnabledDefault}
          data-carousel-switchable={bannerCarouselSwitchable}
          data-carousel-interval={bannerCarouselInterval}
