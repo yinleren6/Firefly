@@ -41,6 +41,7 @@ passwordHint: "示例文章密码123456"
 > 这是一个带有自定义标题的示例。
 
 ## 数学公式
+
 ### 行内公式 (Inline)
 
 欧拉公式 $e^{i\pi} + 1 = 0$ 是数学中最优美的公式之一。
@@ -66,10 +67,11 @@ $$
 $$
 
 ## 代码块
+
 #### 常规语法高亮
 
 ```js
-console.log('此代码有语法高亮!')
+console.log("此代码有语法高亮!");
 ```
 
 #### 渲染 ANSI 转义序列
@@ -90,7 +92,6 @@ Full RGB colors:
 
 Text formatting: [1mBold[0m [2mDimmed[0m [3mItalic[0m [4mUnderline[0m
 ```
-
 
 ## 流程图
 

@@ -78,14 +78,14 @@ $$
 
 ## 更多符号
 
-| 符号 | 代码 | 渲染结果 |
-| :--- | :--- | :--- |
-| Alpha | `\alpha` | $\alpha$ |
-| Beta | `\beta` | $\beta$ |
-| Gamma | `\Gamma` | $\Gamma$ |
-| Pi | `\pi` | $\pi$ |
-| Infinity | `\infty` | $\infty$ |
+| 符号        | 代码          | 渲染结果      |
+| :---------- | :------------ | :------------ |
+| Alpha       | `\alpha`      | $\alpha$      |
+| Beta        | `\beta`       | $\beta$       |
+| Gamma       | `\Gamma`      | $\Gamma$      |
+| Pi          | `\pi`         | $\pi$         |
+| Infinity    | `\infty`      | $\infty$      |
 | Right Arrow | `\rightarrow` | $\rightarrow$ |
-| Partial | `\partial` | $\partial$ |
+| Partial     | `\partial`    | $\partial$    |
 
 更多 KaTeX 语法请参考 [KaTeX Supported Functions](https://katex.org/docs/supported.html)。

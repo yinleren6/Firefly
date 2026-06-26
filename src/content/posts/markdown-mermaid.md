@@ -7,6 +7,7 @@ tags: [Markdown, 博客, Mermaid, Firefly]
 category: 文章示例
 draft: false
 ---
+
 ## Markdown 中 Mermaid 图表完整指南
 
 本文演示如何在 Markdown 文档中使用 Mermaid 创建各种复杂图表，包括流程图、时序图、甘特图、类图和状态图。
@@ -14,9 +15,6 @@ draft: false
 ## 流程图示例
 
 流程图非常适合表示流程或算法步骤。
-
-
-
 
 ```mermaid
 graph TD
@@ -54,7 +52,7 @@ sequenceDiagram
     Server->>Database: 查询用户凭据
     Database-->>Server: 返回用户数据
     Server-->>WebApp: 返回认证结果
-    
+
     alt 认证成功
         WebApp->>User: 显示欢迎页面
         WebApp->>Server: 请求用户数据
@@ -77,22 +75,22 @@ gantt
     title 网站开发项目时间线
     dateFormat  YYYY-MM-DD
     axisFormat  %m/%d
-    
+
     section 设计阶段
     需求分析      :a1, 2023-10-01, 7d
     UI设计                 :a2, after a1, 10d
     原型创建        :a3, after a2, 5d
-    
+
     section 开发阶段
     前端开发      :b1, 2023-10-20, 15d
     后端开发       :b2, after a2, 18d
     数据库设计           :b3, after a1, 12d
-    
+
     section 测试阶段
     单元测试              :c1, after b1, 8d
     集成测试       :c2, after b2, 10d
     用户验收测试   :c3, after c2, 7d
-    
+
     section 部署
     生产环境部署     :d1, after c3, 3d
     发布                    :milestone, after d1, 0d
@@ -113,7 +111,7 @@ classDiagram
         +logout()
         +updateProfile()
     }
-    
+
     class Article {
         +String title
         +String content
@@ -123,21 +121,21 @@ classDiagram
         +edit()
         +delete()
     }
-    
+
     class Comment {
         +String content
         +Date commentDate
         +addComment()
         +deleteComment()
     }
-    
+
     class Category {
         +String name
         +String description
         +addArticle()
         +removeArticle()
     }
-    
+
     User "1" -- "*" Article : 写作
     User "1" -- "*" Comment : 发表
     Article "1" -- "*" Comment : 拥有
@@ -151,14 +149,14 @@ classDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> 草稿
-    
+
     草稿 --> 审核中 : 提交
     审核中 --> 草稿 : 拒绝
     审核中 --> 已批准 : 批准
     已批准 --> 已发布 : 发布
     已发布 --> 已归档 : 归档
     已发布 --> 草稿 : 撤回
-    
+
     state 已发布 {
         [*] --> 活跃
         活跃 --> 隐藏 : 临时隐藏
@@ -166,7 +164,7 @@ stateDiagram-v2
         活跃 --> [*]
         隐藏 --> [*]
     }
-    
+
     已归档 --> [*]
 ```
 

@@ -79,7 +79,6 @@ export const siteConfig: SiteConfig = {
 <summary>点击展开 Obsidian 语法列表</summary>
 
 ```markdown
-
 > [!NOTE] NOTE
 > 通用的笔记块。
 
@@ -164,6 +163,7 @@ export const siteConfig: SiteConfig = {
 > [!NOTE] 自定义标题
 > 这是一个带有自定义标题的示例。
 ```
+
 </details>
 
 ![Obsidian](./images/obsidian.avif)
@@ -196,6 +196,7 @@ export const siteConfig: SiteConfig = {
 > [!TIP] 自定义标题
 > VitePress 风格同样支持自定义标题。
 ```
+
 </details>
 
 ![VitePress](./images/vitepress.avif)
@@ -276,6 +277,5 @@ export const siteConfig: SiteConfig = {
 ![示例图片二](./images/firefly3.avif)
 [/grid]
 ```
-
 
 ---
