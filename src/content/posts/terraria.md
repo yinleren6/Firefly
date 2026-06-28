@@ -20,7 +20,7 @@ lang: zh_CN
 |      地址      |                `frp-cal.cn3.top`                |                  `frp-use.cn3.top`                  |
 |      端口      |                     `45678`                     |                       `23003`                       |
 |     联机群     |                   `576081743`                   | [点击链接加入群聊](https://qm.qq.com/q/nHyctdPxL4)  |
-| 服务器搭建教程 | [原版Tshock](/posts/tshock-server-setup#tshock) | [Tmodloader](/posts/tshock-server-setup#tmodloader) |
+| 服务器搭建教程 | [原版Tshock教程](/posts/tshock-server-setup#tshock) | [Tmodloader教程](/posts/tshock-server-setup#tmodloader) |
 
 <details>
 <summary>展开二维码</summary>
