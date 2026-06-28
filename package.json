@@ -15,7 +15,9 @@
 		"lint": "biome check --write ./src",
 		"preinstall": "npx only-allow pnpm",
 		"icons": "node scripts/generate-icons.js",
-		"lqips": "npx tsx scripts/generate-lqips.ts"
+		"lqips": "npx tsx scripts/generate-lqips.ts",
+		"find-orphan-images": "npx tsx scripts/find-orphan-images.ts",
+		"clean-orphan-images": "npx tsx scripts/find-orphan-images.ts --delete"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.9",
