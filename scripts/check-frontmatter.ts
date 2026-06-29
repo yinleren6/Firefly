@@ -71,7 +71,7 @@ async function main() {
 				file: rel,
 				field: "uid",
 				issue: "uid 是数字类型，需要加引号",
-				suggestion: `uid: "${uidMatch[1].trim()}"`,
+				suggestion: `uid: ${uidMatch[1].trim()}`,
 			});
 		}
 

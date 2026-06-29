@@ -1,10 +1,13 @@
 ---
 title: 草稿示例
 published: 1970-01-01
-tags: [Markdown, 博客, 演示]
+tags:
+  - Markdown
+  - 博客
+  - 演示
 category: 文章示例
 draft: true
-uid: "b5e38bc6-64ae-4dfb-88a8-4b87d13991d9"
+uid: b5e38bc6-64ae-4dfb-88a8-4b87d13991d9
 ---
 
 ## 这篇文章是草稿

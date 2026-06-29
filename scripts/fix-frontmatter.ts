@@ -37,15 +37,11 @@ async function main() {
 			}
 		}
 
-		// uid 没加引号 → 加引号（YAML 会把 unquoted 值解析为其他类型）
-		const uidLine = raw.match(/^uid:\s*(\S+)\s*$/m);
+		// uid 纯数字没引号 → 加引号（YAML 会把纯数字解析为 number）
+		const uidLine = raw.match(/^uid:\s*(\d+)\s*$/m);
 		if (uidLine) {
-			const val = uidLine[1];
-			const isQuoted = val.startsWith('"') || val.startsWith("'");
-			if (!isQuoted && val !== "") {
-				raw = raw.replace(/^uid:\s*\S+\s*$/m, `uid: "${val}"`);
-				changed = true;
-			}
+			raw = raw.replace(/^uid:\s*\d+\s*$/m, `uid: "${uidLine[1]}"`);
+			changed = true;
 		}
 
 		if (changed) {
