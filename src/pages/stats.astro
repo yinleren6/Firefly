@@ -301,8 +301,14 @@ async function loadAll(days) {
   loadReferrers(days);
 }
 
-loadOverview();
-loadAll(30);
+function initStats() {
+  loadOverview();
+  loadAll(30);
+}
+
+initStats();
+document.addEventListener("astro:page-load", initStats);
+document.addEventListener("swup:contentReplaced", initStats);
 
 // period select
 document.getElementById("period-select").addEventListener("change", function() {
