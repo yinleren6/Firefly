@@ -22,6 +22,8 @@ const postsCollection = defineCollection({
 		comment: z.boolean().optional().default(true),
 		password: z.string().optional().default(""),
 		passwordHint: z.string().optional().default(""),
+		uid: z.string().optional().default(""),
+		alias: z.string().optional().nullable().default(""),
 
 		/* For internal use */
 		prevTitle: z.string().default(""),

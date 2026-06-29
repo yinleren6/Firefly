@@ -11,6 +11,7 @@ tags:
 category: 博客指南
 pinned: false
 draft: false
+uid: d29fb880-9af7-4caa-89a6-57a732342617
 ---
 
 这个博客模板是基于 [Astro](https://astro.build/) 构建的。对于本指南中未提及的内容，您可以在 [Astro 文档](https://docs.astro.build/) 中找到答案。

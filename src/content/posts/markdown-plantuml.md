@@ -5,6 +5,7 @@ description: 用于验证 Firefly 中 PlantUML 插件渲染、主题切换与交
 tags: [PlantUML, Firefly, Markdown]
 category: 文章示例
 draft: false
+uid: e92104eb-0149-43b8-87a4-be9f90d71a44
 ---
 
 ## Markdown 中 PlantUML 图表指南

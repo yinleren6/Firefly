@@ -44,7 +44,7 @@ async function hashIp(ip: string): Promise<string> {
 export const POST: APIRoute = async ({ request }) => {
 	try {
 		const ip = request.headers.get("CF-Connecting-IP") || "";
-		const { path } = await request.json();
+		const { path, uid } = await request.json();
 		if (!path || typeof path !== "string") {
 			return Response.json({ error: "path is required" }, { status: 400 });
 		}
@@ -63,9 +63,9 @@ export const POST: APIRoute = async ({ request }) => {
 
 		await db
 			.prepare(
-				"INSERT INTO pageviews(path, ip_hash, referrer, is_crawler) VALUES(?, ?, ?, ?)",
+				"INSERT INTO pageviews(path, post_uid, ip_hash, referrer, is_crawler) VALUES(?, ?, ?, ?, ?)",
 			)
-			.bind(path, ipHash, referrer, isCrawler)
+			.bind(path, uid || "", ipHash, referrer, isCrawler)
 			.run();
 
 		const result = await db

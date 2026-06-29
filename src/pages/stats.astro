@@ -240,8 +240,22 @@ function drawChart(labels, pvData, uvData) {
   };
 }
 
+async function getValidPostPaths() {
+  try {
+    const res = await fetch("/api/allPostMeta.json");
+    if (!res.ok) return null;
+    const posts = await res.json();
+    return new Set(posts.map(p => `/posts/${encodeURIComponent(p.id)}/`));
+  } catch {
+    return null;
+  }
+}
+
 async function loadTopPosts(days) {
-  const res = await fetch(`/api/stats/?type=top&days=${days}`);
+  const [res, validPaths] = await Promise.all([
+    fetch(`/api/stats/?type=top&days=${days}`),
+    getValidPostPaths(),
+  ]);
   if (!res.ok) return;
   const rows = await res.json();
   const maxCount = rows.length > 0 ? rows[0].count : 1;
@@ -250,7 +264,8 @@ async function loadTopPosts(days) {
     const path = decodeURIComponent(r.path);
     const title = path.replace(/^\/posts\//, "").replace(/\/$/, "").split("/").pop() || path;
     const pct = (r.count / maxCount * 100).toFixed(0);
-    const isLink = r.path.startsWith("/posts/");
+    const stillExists = validPaths?.has(r.path);
+    const isLink = r.path.startsWith("/posts/") && stillExists;
     const tag = isLink ? "a" : "div";
     const attrs = isLink ? `href="${r.path}"` : "";
     return `<${tag} ${attrs} class="block py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition group">

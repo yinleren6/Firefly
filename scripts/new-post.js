@@ -2,6 +2,7 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 
 function getDate() {
 	const today = new Date();
@@ -49,8 +50,9 @@ description: ''
 image: ''
 tags: []
 category: ''
-draft: false 
+draft: false
 lang: ''
+uid: ${crypto.randomUUID()}
 ---
 `;
 

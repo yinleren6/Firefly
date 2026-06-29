@@ -1663,10 +1663,12 @@ function trackPageview() {
   if (now - lastTrack < 2000) return;
   lastTrack = now;
   const path = window.location.pathname;
+  const uidEl = document.getElementById("post-uid");
+  const uid = uidEl ? uidEl.dataset.uid : "";
   fetch("/api/view/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path }),
+    body: JSON.stringify({ path, uid }),
   }).catch(() => {});
 }
 trackPageview();

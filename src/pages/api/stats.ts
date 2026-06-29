@@ -37,16 +37,27 @@ export const GET: APIRoute = async ({ url }) => {
 		if (type === "top") {
 			const rows = await db
 				.prepare(
-					"SELECT path, COUNT(*) as count FROM pageviews WHERE is_crawler = 0" +
+					"SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0" +
 						dateFilter +
-						" GROUP BY path ORDER BY count DESC LIMIT 50",
+						" GROUP BY path, post_uid ORDER BY count DESC LIMIT 100",
 				)
 				.bind(...dateBind)
-				.all<{ path: string; count: number }>();
+				.all<{ path: string; post_uid: string; count: number }>();
+			// 合并同 uid 的统计数据（文章改名后路径变了但 uid 不变）
+			const uidMap = new Map<string, { path: string; count: number }>();
+			for (const r of rows.results ?? []) {
+				const key = r.post_uid || r.path;
+				if (uidMap.has(key)) {
+					uidMap.get(key)!.count += r.count;
+				} else {
+					uidMap.set(key, { path: r.path, count: r.count });
+				}
+			}
+			const merged = [...uidMap.values()];
 			// Group non-post paths, filter garbage
 			const posts: { path: string; count: number }[] = [];
 			let otherCount = 0;
-			for (const r of rows.results ?? []) {
+			for (const r of merged) {
 				if (
 					r.path === "/posts/{canonicalSlug}/" ||
 					r.path.includes("{canonicalSlug}")

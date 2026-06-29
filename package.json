@@ -17,7 +17,8 @@
 		"icons": "node scripts/generate-icons.js",
 		"lqips": "npx tsx scripts/generate-lqips.ts",
 		"find-orphan-images": "npx tsx scripts/find-orphan-images.ts",
-		"clean-orphan-images": "npx tsx scripts/find-orphan-images.ts --delete"
+		"clean-orphan-images": "npx tsx scripts/find-orphan-images.ts --delete",
+		"backfill-uid": "npx tsx scripts/backfill-uid.ts"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.9",
