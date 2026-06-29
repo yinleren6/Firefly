@@ -6,7 +6,7 @@
 		"dev": "astro dev",
 		"start": "astro dev",
 		"check": "astro check",
-		"build": "node scripts/generate-icons.js && npx tsx scripts/generate-lqips.ts && astro build && npx tsx scripts/subset-fonts.ts && pagefind --site dist/client",
+		"build": "npx tsx scripts/fix-frontmatter.ts && npx tsx scripts/backfill-uid.ts && node scripts/generate-icons.js && npx tsx scripts/generate-lqips.ts && astro build && npx tsx scripts/subset-fonts.ts && pagefind --site dist/client",
 		"preview": "astro preview",
 		"astro": "astro",
 		"type-check": "tsc --noEmit --isolatedDeclarations",
@@ -18,7 +18,8 @@
 		"lqips": "npx tsx scripts/generate-lqips.ts",
 		"find-orphan-images": "npx tsx scripts/find-orphan-images.ts",
 		"clean-orphan-images": "npx tsx scripts/find-orphan-images.ts --delete",
-		"backfill-uid": "npx tsx scripts/backfill-uid.ts"
+		"backfill-uid": "npx tsx scripts/backfill-uid.ts",
+		"fix-frontmatter": "npx tsx scripts/fix-frontmatter.ts"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.9",

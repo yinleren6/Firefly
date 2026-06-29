@@ -8,13 +8,13 @@ tags:
   - 系列
   - 索引
 category: 经验教程
-alias:
+alias: ""
 lang: zh_CN
 password: ""
 passwordHint: ""
 draft: false
-pinned: false
-uid: 9f22de82-530e-4be5-8752-171d5be54a71
+pinned: true
+uid: "9f22de82-530e-4be5-8752-171d5be54a71"
 ---
 
 这个系列汇集了我多年使用 Windows 过程中积累的各种技巧、脚本和注册表修改记录。覆盖了从系统安全到效率工具的方方面面。

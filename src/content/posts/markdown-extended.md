@@ -7,7 +7,7 @@ image: ""
 tags: [演示, 示例, Markdown, Firefly]
 category: "文章示例"
 draft: false
-uid: 8298d53b-b67a-42f3-a4a7-f6eca0429219
+uid: "8298d53b-b67a-42f3-a4a7-f6eca0429219"
 ---
 
 ## GitHub 仓库卡片

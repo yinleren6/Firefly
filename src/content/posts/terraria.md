@@ -8,7 +8,7 @@ draft: false
 password: "123"
 passwordHint: "提示: 来加群一起玩吧"
 lang: zh_CN
-uid: b1a7f91e-c47c-4499-94e3-deaea0601509
+uid: "b1a7f91e-c47c-4499-94e3-deaea0601509"
 ---
 
 ## 泰拉瑞亚

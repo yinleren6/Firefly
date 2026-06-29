@@ -7,7 +7,7 @@ tags: [Markdown, Firefly, 博客, 主题, 模板]
 category: 文章示例
 draft: false
 image: ./images/firefly2.avif
-uid: 28547fa7-ad85-48fe-b54e-f1cda01b1f7a
+uid: "28547fa7-ad85-48fe-b54e-f1cda01b1f7a"
 ---
 
 ## 🌟 项目概述

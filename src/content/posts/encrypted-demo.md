@@ -6,7 +6,7 @@ tags: [示例, 密码保护]
 category: 文章示例
 password: "123456"
 passwordHint: "示例文章密码123456"
-uid: cb6684a8-de9a-4a70-94d6-80c5640c3c85
+uid: "cb6684a8-de9a-4a70-94d6-80c5640c3c85"
 ---
 
 ## 成功解锁了这篇文章！

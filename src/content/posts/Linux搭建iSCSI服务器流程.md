@@ -17,7 +17,7 @@ password: ""
 passwordHint: ""
 draft: false
 pinned: true
-uid: a5603309-0287-4ede-bd4e-da87ac59d267
+uid: "a5603309-0287-4ede-bd4e-da87ac59d267"
 ---
 
 ## Linux 搭建 iSCSI 服务器流程

@@ -81,10 +81,7 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
     class:list={[
       "post-card-content",
       "pl-4 md:pl-9 pr-4 md:pr-2 pt-4 md:pt-7 pb-4 md:pb-7 relative flex flex-col h-full",
-      {
-        "w-full md:w-[calc(100%-var(--coverWidth)-1.5rem)]": !hasCover,
-        "w-full md:w-[calc(100%-var(--coverWidth)-1.5rem)]": hasCover,
-      },
+      "w-full md:w-[calc(100%-var(--coverWidth)-1.5rem)]",
     ]}
   >
     <a
