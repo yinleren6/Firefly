@@ -62,7 +62,7 @@ export function ApiButtonComponent(properties, children) {
 		`function fmt(nn){var u=['B','KB','MB','GB'],i=0;while(nn>=1024&&i<3){nn/=1024;i++}return nn.toFixed(i>0?1:0)+u[i]}` +
 		`var received=0;while(true){var d=await re.read();if(d.done)break;await ws.write(d.value);received+=d.value.length;` +
 		`if(cl){var pct=Math.round(received/cl*100);F.style.width=pct+'%';P.textContent=fmt(received)+'/'+fmt(cl)+' '+pct+'%'}}` +
-		`await ws.close();F.style.width='100%';P.textContent='下载完成'}}catch(e1){P.textContent=''}` +
+		`await ws.close();F.style.width='100%';P.textContent='下载完成'})}}catch(e1){P.textContent=''}` +
 		`Y.textContent='另存为…';Y.disabled=false;Y._d=false})` +
 		`}else{try{c.innerHTML='<pre class="overflow-auto p-3 text-sm font-mono whitespace-pre-wrap break-all m-0 rounded-xl bg-(--card-bg) border border-(--line-divider) max-h-60">'+JSON.stringify(JSON.parse(l),null,2)+'</pre>'}catch(e){c.textContent=l}}` +
 		`}).catch(function(){c.innerHTML='<span class="text-sm text-red-500">请求失败</span>'})` +
