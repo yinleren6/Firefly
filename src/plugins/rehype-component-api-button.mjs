@@ -2,10 +2,10 @@
 import { h } from "hastscript";
 
 /**
- * API 请求按钮
+ * API 请求按钮（内联模式）
  * ::api{url="https://..." label="查询"}
  *
- * 响应含 url/filename 时自动显示下载界面，否则显示原始 JSON。
+ * 点击后 fetch JSON，内联显示文件名 + 下载按钮。
  */
 export function ApiButtonComponent(properties, children) {
 	if (Array.isArray(children) && children.length !== 0)
@@ -15,9 +15,12 @@ export function ApiButtonComponent(properties, children) {
 
 	const apiUrl = properties.url || "";
 	const label = properties.label || "发送请求";
-
 	if (!apiUrl)
-		return h("div", { class: "hidden" }, 'Missing URL. ("url" attribute is required)');
+		return h(
+			"div",
+			{ class: "hidden" },
+			'Missing URL. ("url" attribute is required)',
+		);
 
 	const id = `API${Math.random().toString(36).slice(-6)}`;
 
@@ -30,114 +33,24 @@ export function ApiButtonComponent(properties, children) {
 		label,
 	);
 
-	const rawPre = h(
-		`pre#${id}-raw`,
-		{ class: "overflow-auto p-5 text-sm font-mono leading-relaxed whitespace-pre-wrap break-all m-0 hidden" },
-		"",
+	const result = h(`div#${id}-result`, { class: "mt-3 hidden" });
+
+	const scriptSrc =
+		"(function(){var b=document.getElementById('" +
+		id +
+		"-btn'),r=document.getElementById('" +
+		id +
+		"-result'),u=" +
+		JSON.stringify(apiUrl) +
+		";b.addEventListener('click',function(){if(b.disabled)return;b.disabled=true;b.textContent='获取中...';r.classList.remove('hidden');r.innerHTML='<div class=\"flex items-center gap-2 py-2\"><div class=\"w-4 h-4 border-2 border-(--primary) border-t-transparent rounded-full animate-spin\"></div><span class=\"text-sm text-neutral-500\">正在请求...</span></div>';fetch(u,{headers:{'Accept':'application/json'}}).then(async function(k){var l=await k.text(),m;try{m=JSON.parse(l)}catch(e){}var n=m&&(m.url||m.data&&m.data.url);if(n){var h='';if(m.filename){h='<div class=\"flex flex-col min-w-0 flex-1\"><span class=\"text-xs text-neutral-500\">文件名</span><span class=\"font-semibold text-sm truncate\">'+m.filename+'</span></div>'}r.innerHTML='<div class=\"flex items-center gap-3 p-3 rounded-xl bg-(--card-bg) border border-(--line-divider)\">'+h+'<a href=\"'+n+'\" target=\"_blank\" rel=\"noopener\" class=\"shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 transition-all no-underline\">⬇ 下载</a></div>'}else{try{r.innerHTML='<pre class=\"overflow-auto p-3 text-sm font-mono whitespace-pre-wrap break-all m-0 rounded-xl bg-(--card-bg) border border-(--line-divider) max-h-60\">'+JSON.stringify(JSON.parse(l),null,2)+'</pre>'}catch(e){r.textContent=l}}}).catch(function(){r.innerHTML='<span class=\"text-sm text-red-500\">请求失败</span>'}).finally(function(){b.disabled=false;b.textContent='" +
+		label +
+		"'})})})();";
+
+	const script = h(
+		`script#${id}-script`,
+		{ type: "text/javascript" },
+		scriptSrc,
 	);
 
-	const dlCard = h(
-		`div#${id}-dl`,
-		{ class: "p-6 flex flex-col items-center gap-5 hidden" },
-		[
-			h("div", { class: "flex items-center gap-3 w-full" }, [
-				h("div", { class: "w-10 h-10 rounded-xl bg-(--primary)/10 flex items-center justify-center shrink-0" }, [
-					h("span", { class: "text-lg" }, "\u{1F4E6}"),
-				]),
-				h("div", { class: "flex flex-col min-w-0" }, [
-					h("span", { class: "text-xs text-neutral-500" }, "文件名"),
-					h(`span#${id}-filename`, { class: "font-semibold text-sm truncate" }, ""),
-				]),
-			]),
-			h(
-				`a#${id}-dllink`,
-				{
-					class:
-						"inline-flex w-full items-center justify-center gap-2 px-6 py-3 rounded-xl bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 hover:shadow-lg transition-all cursor-pointer no-underline",
-					href: "#",
-					target: "_blank",
-					rel: "noopener",
-				},
-				"⬇ 下载",
-			),
-		],
-	);
-
-	const loadingEl = h(
-		`div#${id}-loading`,
-		{ class: "hidden" },
-		h("div", { class: "flex flex-col items-center gap-3 py-10" }, [
-			h("div", { class: "w-5 h-5 border-2 border-(--primary) border-t-transparent rounded-full animate-spin" }),
-			h("span", { class: "text-sm text-neutral-500" }, "正在请求..."),
-		]),
-	);
-
-	const modalBody = h("div", { class: "overflow-auto" }, [loadingEl, rawPre, dlCard]);
-
-	const modal = h(
-		`div#${id}-modal`,
-		{ class: "relative w-full max-w-md max-h-[85vh] overflow-hidden rounded-xl sm:rounded-2xl bg-(--card-bg) border border-(--line-divider) shadow-2xl" },
-		[
-			h("div", { class: "flex items-center justify-between px-5 py-3.5 border-b border-(--line-divider)" }, [
-				h("span", { class: "text-sm font-semibold text-75" }, "响应结果"),
-				h(
-					`button#${id}-close`,
-					{
-						class:
-							"flex h-7 w-7 items-center justify-center rounded-lg bg-(--btn-regular-bg) text-(--btn-content) hover:bg-(--btn-regular-bg-hover) active:bg-(--btn-regular-bg-active) transition-colors cursor-pointer border-none text-sm leading-none",
-					},
-					"✕",
-				),
-			]),
-			modalBody,
-		],
-	);
-
-	const overlay = h(
-		`div#${id}-overlay`,
-		{
-			class: "fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 hidden",
-		},
-		[h("div", { class: "w-full max-w-md animate-api-in" }, [modal])],
-	);
-
-	const script = h(`script#${id}-script`, { type: "text/javascript" }, `(function(){
-const a=document.getElementById("${id}-btn");
-const b=document.getElementById("${id}-overlay");
-const c=document.getElementById("${id}-loading");
-const d=document.getElementById("${id}-raw");
-const e=document.getElementById("${id}-dl");
-const f=document.getElementById("${id}-filename");
-const g=document.getElementById("${id}-dllink");
-const h=document.getElementById("${id}-close");
-const i=${JSON.stringify(apiUrl)};
-const j=i.replace(/[?&]format=json/g,"");
-a.addEventListener("click",function(){
-	a.disabled=true;a.textContent="请求中...";
-	b.classList.remove("hidden");
-	c.classList.remove("hidden");d.classList.add("hidden");e.classList.add("hidden");
-	fetch(i,{headers:{"Accept":"application/json"}})
-	.then(async k=>{
-		const l=await k.text();
-		let m;try{m=JSON.parse(l)}catch{}
-		const n=m&&(m.url||m.data?.url);
-		if(n){
-			c.classList.add("hidden");d.classList.add("hidden");e.classList.remove("hidden");
-			f.textContent=m.filename||"download";
-			g.href=n;
-		}else{
-			c.classList.add("hidden");d.classList.remove("hidden");e.classList.add("hidden");
-			try{d.textContent=JSON.stringify(JSON.parse(l),null,2)}catch{d.textContent=l}
-		}
-	})
-	.catch(k=>{c.classList.add("hidden");d.classList.remove("hidden");e.classList.add("hidden");d.textContent="请求失败:\\n"+k.message})
-	.finally(()=>{a.disabled=false;a.textContent="${label}"});
-});
-h.addEventListener("click",function(){b.classList.add("hidden")});
-b.addEventListener("click",function(k){if(k.target===this)b.classList.add("hidden")});
-})();`);
-
-	const style = h(`style#${id}-style`, {}, `@keyframes api-in{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}.animate-api-in{animation:api-in .2s ease-out}`);
-
-	return h("div", { class: "my-4" }, [btn, overlay, style]);
+	return h("div", { class: "my-4" }, [btn, result, script]);
 }
