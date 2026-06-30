@@ -257,7 +257,8 @@ async function loadTopPosts(days) {
     getValidPostPaths(),
   ]);
   if (!res.ok) return;
-  const rows = await res.json();
+  const json = await res.json();
+  const rows = Array.isArray(json) ? json : (json.data || []);
   const maxCount = rows.length > 0 ? rows[0].count : 1;
   const el = $("top-posts");
   el.innerHTML = rows.map((r) => {
