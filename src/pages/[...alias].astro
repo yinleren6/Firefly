@@ -18,6 +18,7 @@ export async function getStaticPaths() {
 
 const { redirectUrl, title } = Astro.props;
 const encodedUrl = encodeURI(redirectUrl);
+const redirectScript = `window.location.replace("${encodedUrl}");`;
 ---
 
 <MainGridLayout title={title}>
@@ -39,6 +40,4 @@ const encodedUrl = encodeURI(redirectUrl);
 	</div>
 </MainGridLayout>
 
-<script is:inline>
-	window.location.replace("{encodedUrl}");
-</script>
+<script set:html={redirectScript}></script>
