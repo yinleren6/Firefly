@@ -1,0 +1,28 @@
+---
+import { getSortedPosts } from "@/utils/content-utils";
+import { getPostUrlBySlug, removeFileExtension } from "@/utils/url-utils";
+
+export async function getStaticPaths() {
+	const posts = await getSortedPosts();
+	return posts
+		.filter((p) => p.data.alias)
+		.map((p) => {
+			const slug = removeFileExtension(p.id);
+			return {
+				params: { alias: p.data.alias },
+			};
+		});
+}
+
+const { alias } = Astro.params;
+
+// 查找别名对应的文章
+const posts = await getSortedPosts();
+const match = posts.find((p) => p.data.alias === alias);
+if (match) {
+	const slug = removeFileExtension(match.id);
+	return Astro.redirect(encodeURI(getPostUrlBySlug(slug)), 301);
+}
+
+return Astro.redirect("/", 301);
+---
