@@ -36,6 +36,7 @@ import { collectUsedFontCssVars } from "./src/utils/fontHelper";
 import I18nKey from "./src/i18n/i18nKey";
 import { i18n } from "./src/i18n/translation";
 import { fontProviders } from "astro/config";
+import { ApiButtonComponent } from "./src/plugins/rehype-component-api-button.mjs";
 import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
 import rehypeEmailProtection from "./src/plugins/rehype-email-protection.mjs";
 import rehypeExternalLinks from "./src/plugins/rehype-external-links.mjs";
@@ -273,6 +274,7 @@ export default defineConfig({
 					{
 						components: {
 							github: GithubCardComponent,
+							api: ApiButtonComponent,
 						},
 					},
 				],

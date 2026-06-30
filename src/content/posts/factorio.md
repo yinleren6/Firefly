@@ -45,7 +45,7 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 <details open>
 <summary>展开</summary>
 
-> - 关闭悬崖
+> - 悬崖全最低
 > - 2 倍科技消耗
 > - 地图种子: `4268173269`
 
@@ -67,5 +67,8 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 |      `helmod`       |   helmod 量化师    | 2.2.14 |
 | `inventory-repair`  |      库存维修      | 20.0.3 |
 |  `RateCalculator`   |       速率仪       | 3.3.8  |
+|    `Milestones`     |       里程碑       | 1.4.7  |
+
+::api{url="https://api.cn3.top/api/v1/public/dl/files/mod/factorio/factorio-mod-2.0.77.zip?format=json" label="📦 下载模组"}
 
 </details>
