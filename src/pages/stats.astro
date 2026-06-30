@@ -96,18 +96,15 @@ let chart = null;
 function drawChart(labels, pvData, uvData) {
   const canvas = $("chart-daily");
   if (!canvas) return;
-
   if (chart) { chart.destroy(); chart = null; }
 
   const hue = getComputedStyle(document.documentElement).getPropertyValue("--hue").trim() || "210";
   const primary = `hsl(${hue}, 55%, 55%)`;
-  const primaryLight = `hsl(${hue}, 55%, 55%, 0.1)`;
 
-  // Simple inline chart using canvas
   const ctx = canvas.getContext("2d");
   const w = canvas.width = canvas.parentElement.clientWidth;
-  const h = canvas.height = 300;
-  const pad = { top: 20, right: 20, bottom: 30, left: 50 };
+  const h = canvas.height = 340;
+  const pad = { top: 20, right: 60, bottom: 60, left: 50 };
   const cw = w - pad.left - pad.right;
   const ch = h - pad.top - pad.bottom;
 
@@ -123,9 +120,11 @@ function drawChart(labels, pvData, uvData) {
 
   const maxPv = Math.max(...pvData, 1);
   const maxUv = Math.max(...uvData, 1);
-  const stepY = Math.ceil(maxPv / 5);
+  const uvMax = maxUv > 0 ? Math.ceil(maxUv * 1.2) : 1;
+  const pvStep = Math.ceil(maxPv / 5);
+  const uvStep = Math.ceil(uvMax / 5);
 
-  // grid lines
+  // Grid + left Y-axis (PV)
   ctx.strokeStyle = "oklch(0.9 0 0)";
   ctx.lineWidth = 1;
   ctx.font = "11px system-ui";
@@ -137,10 +136,18 @@ function drawChart(labels, pvData, uvData) {
     ctx.moveTo(pad.left, y);
     ctx.lineTo(w - pad.right, y);
     ctx.stroke();
-    ctx.fillText((stepY * i).toString(), pad.left - 8, y + 4);
+    ctx.fillText((pvStep * i).toString(), pad.left - 6, y + 4);
   }
 
-  // bars
+  // Right Y-axis (UV)
+  ctx.textAlign = "left";
+  ctx.fillStyle = "oklch(0.6 0.15 250)";
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.top + ch - (ch * i / 5);
+    ctx.fillText((uvStep * i).toString(), w - pad.right + 6, y + 4);
+  }
+
+  // Bars (PV)
   const barW = Math.min(24, cw / labels.length - 2);
   const gap = (cw - barW * labels.length) / (labels.length + 1);
 
@@ -151,46 +158,74 @@ function drawChart(labels, pvData, uvData) {
     const y = pad.top + ch - barH;
     bars.push({ x, y, w: barW, h: barH, value: v, label: labels[i] });
 
-    // bar
     ctx.fillStyle = primary;
     ctx.beginPath();
     ctx.roundRect(x, y, barW, barH, [3, 3, 0, 0]);
     ctx.fill();
 
-    // label
+    if (v > 0) {
+      ctx.fillStyle = "#666";
+      ctx.font = "bold 11px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText(v.toLocaleString(), x + barW / 2, y - 4);
+    }
+
     ctx.fillStyle = "#999";
     ctx.font = "10px system-ui";
     ctx.textAlign = "center";
     ctx.fillText(labels[i], x + barW / 2, h - pad.bottom + 16);
   });
 
-  // UV line
+  // UV line + dots + numbers
   if (uvData.some(v => v > 0)) {
-    ctx.strokeStyle = primary;
+    ctx.strokeStyle = "oklch(0.6 0.15 250)";
     ctx.lineWidth = 2;
     ctx.beginPath();
+    const uvPoints = [];
     uvData.forEach((v, i) => {
       const x = pad.left + gap + i * (barW + gap) + barW / 2;
-      const y = pad.top + ch - (v / maxPv) * ch;
+      const y = pad.top + ch - (v / uvMax) * ch;
+      uvPoints.push({ x, y, value: v });
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
     ctx.stroke();
 
-    // dots
-    uvData.forEach((v, i) => {
-      const x = pad.left + gap + i * (barW + gap) + barW / 2;
-      const y = pad.top + ch - (v / maxPv) * ch;
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = primary;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+    uvPoints.forEach((p) => {
+      if (p.value > 0) {
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "oklch(0.6 0.15 250)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "oklch(0.6 0.15 250)";
+        ctx.font = "bold 11px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText(p.value.toLocaleString(), p.x, p.y - 8);
+      }
     });
   }
 
-  // tooltip & hover
+  // Legend
+  const ly = h - 12;
+  ctx.font = "12px system-ui";
+
+  ctx.fillStyle = primary;
+  ctx.fillRect(pad.left, ly - 8, 16, 3);
+  ctx.fillStyle = "#666";
+  ctx.textAlign = "left";
+  ctx.fillText("访问量(PV)", pad.left + 22, ly - 3);
+
+  ctx.fillStyle = "oklch(0.6 0.15 250)";
+  ctx.beginPath();
+  ctx.arc(pad.left + 130, ly - 6, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#666";
+  ctx.fillText("访客数(UV)", pad.left + 142, ly - 3);
+
+  // tooltip & hover  // tooltip & hover
   let tooltip = canvas.parentElement.querySelector(".chart-tooltip");
   if (!tooltip) {
     tooltip = document.createElement("div");

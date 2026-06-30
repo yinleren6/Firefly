@@ -13,7 +13,7 @@ lang: zh_CN
 password: ""
 passwordHint: ""
 draft: false
-pinned: true
+pinned: 100
 uid: "9f22de82-530e-4be5-8752-171d5be54a71"
 ---
 

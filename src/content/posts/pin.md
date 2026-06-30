@@ -3,14 +3,15 @@ title: 加群向导
 published: 2026-07-01
 description: 加群向导
 image: ./2026/07/banner/pin-1782847876671.webp
-tags: []
+tags:
+  - 加群向导
 category: 页面
 alias: q
 lang: zh_CN
 password: ""
 passwordHint: ""
 draft: false
-pinned: true
+pinned: 999
 uid: dd734027-fcd5-4d6b-bc50-22fd59a2135a
 ---
 

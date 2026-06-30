@@ -9,7 +9,7 @@ tags:
   - Markdown
   - 使用指南
 category: 博客指南
-pinned: false
+pinned: 0
 draft: false
 uid: d29fb880-9af7-4caa-89a6-57a732342617
 ---
