@@ -72,6 +72,11 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 </details>
 
 > [!NOTE] 温馨提示
-> 模组文件均来自 factorio 内模组社区,均为社区用户上传，本站不拥有任何文件版权。如有侵权，请联系平台下架。
+> 模组文件均来自 factorio 内模组社区,均为社区用户上传，本站不拥有任何文件版权。如有侵权，请联系 i@cn3.top ,我们将在3个工作日内移除相关内容。
 
 ::api{url="https://api.cn3.top/api/v1/public/dl/files/mod/factorio/factorio-mod-2.0.77.zip?format=json" label="📦 获取模组"}
+
+#### 🚀 太空时代 DLC
+
+> [!WARNING] 请支持正版,视频仅供参考,与本站无关
+> `https://www.bilibili.com/video/BV1rNj26VEpf/`
