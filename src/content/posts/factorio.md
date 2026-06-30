@@ -36,6 +36,7 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 <details open>
 <summary>展开</summary>
 
+> - 6.30 _增加里程碑 mod_
 > - 6.28 _优化 mod 列表_
 
 </details>
