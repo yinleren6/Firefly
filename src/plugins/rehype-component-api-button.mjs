@@ -130,12 +130,12 @@ b.addEventListener("click",function(){
 	.then(async res=>{
 		const txt=await res.text();
 		let data;try{data=JSON.parse(txt)}catch{}
-		if(data&&data.url){
+		console.log("[API] Response:",data);const dlUrl=data&&(data.url||data.data?.url);if(dlUrl){
 			l.classList.add("hidden");r.classList.add("hidden");d.classList.remove("hidden");
 			f.textContent=data.filename||"download";
-			a.href=du;
+			a.href=dlUrl||du;
 		}else{
-			l.classList.add("hidden");r.classList.remove("hidden");d.classList.add("hidden");
+			l.classList.add("hidden");r.classList.remove("hidden");d.classList.add("hidden");console.log("[API] No url field, showing raw");
 			try{r.textContent=JSON.stringify(JSON.parse(txt),null,2)}catch{r.textContent=txt}
 		}
 	})
