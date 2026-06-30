@@ -6,6 +6,7 @@ import { h } from "hastscript";
  * ::api{url="https://..." label="查询"}
  *
  * 响应含 url/filename 时自动显示下载界面，否则显示原始 JSON。
+ * 下载按钮使用去掉了 ?format=json 的原始 URL（302 直链下载）。
  */
 export function ApiButtonComponent(properties, children) {
 	if (Array.isArray(children) && children.length !== 0)
@@ -13,10 +14,10 @@ export function ApiButtonComponent(properties, children) {
 			'Invalid directive. ("api" directive must be leaf type ::api{url="..."})',
 		]);
 
-	const url = properties.url || "";
+	const apiUrl = properties.url || "";
 	const label = properties.label || "发送请求";
 
-	if (!url)
+	if (!apiUrl)
 		return h(
 			"div",
 			{ class: "hidden" },
@@ -38,9 +39,9 @@ export function ApiButtonComponent(properties, children) {
 		`pre#${id}-raw`,
 		{
 			class:
-				"overflow-auto p-6 text-sm font-mono leading-relaxed whitespace-pre-wrap break-all m-0",
+				"overflow-auto p-6 text-sm font-mono leading-relaxed whitespace-pre-wrap break-all m-0 hidden",
 		},
-		"点击按钮发送请求...",
+		"",
 	);
 
 	const dlCard = h(
@@ -49,7 +50,7 @@ export function ApiButtonComponent(properties, children) {
 		[
 			h("div", { class: "flex items-center gap-3 w-full pb-4 border-b border-(--border)" }, [
 				h("div", { class: "w-10 h-10 rounded-lg bg-(--primary)/10 flex items-center justify-center shrink-0" }, [
-					h("span", { class: "text-xl" }, "📦"),
+					h("span", { class: "text-xl" }, "\u{1F4E6}"),
 				]),
 				h("div", { class: "flex flex-col min-w-0" }, [
 					h("span", { class: "text-sm text-neutral-500" }, "文件名"),
@@ -70,7 +71,13 @@ export function ApiButtonComponent(properties, children) {
 		],
 	);
 
-	const modalBody = h("div", { class: "overflow-auto" }, [rawPre, dlCard]);
+	const loadingEl = h(
+		`div#${id}-loading`,
+		{ class: "p-6 text-center text-sm text-neutral-500" },
+		"正在请求...",
+	);
+
+	const modalBody = h("div", { class: "overflow-auto" }, [loadingEl, rawPre, dlCard]);
 
 	const modal = h(
 		`div#${id}-modal`,
@@ -104,65 +111,40 @@ export function ApiButtonComponent(properties, children) {
 		[modal],
 	);
 
-	const script = h(`script#${id}-script`, { type: "text/javascript" }, `
-(function() {
-	const btn = document.getElementById("${id}-btn");
-	const overlay = document.getElementById("${id}-overlay");
-	const rawPre = document.getElementById("${id}-raw");
-	const dlCard = document.getElementById("${id}-dl");
-	const filenameEl = document.getElementById("${id}-filename");
-	const dlLink = document.getElementById("${id}-dllink");
-	const closeBtn = document.getElementById("${id}-close");
-
-	btn.addEventListener("click", function() {
-		btn.disabled = true;
-		btn.textContent = "请求中...";
-		overlay.classList.remove("hidden");
-		rawPre.classList.remove("hidden");
-		dlCard.classList.add("hidden");
-		rawPre.textContent = "正在请求...";
-		fetch(${JSON.stringify(url)}, {
-			headers: { "Accept": "application/json" },
-		})
-			.then(async (res) => {
-				const text = await res.text();
-				let data;
-				try { data = JSON.parse(text); } catch { data = null; }
-				if (data && data.url) {
-					rawPre.classList.add("hidden");
-					dlCard.classList.remove("hidden");
-					filenameEl.textContent = data.filename || data.url.split("/").pop() || "download";
-					dlLink.href = data.url;
-				} else {
-					rawPre.classList.remove("hidden");
-					dlCard.classList.add("hidden");
-					try {
-						rawPre.textContent = JSON.stringify(JSON.parse(text), null, 2);
-					} catch {
-						rawPre.textContent = text;
-					}
-				}
-			})
-			.catch((err) => {
-				rawPre.classList.remove("hidden");
-				dlCard.classList.add("hidden");
-				rawPre.textContent = "请求失败:\\n" + err.message;
-			})
-			.finally(() => {
-				btn.disabled = false;
-				btn.textContent = ${JSON.stringify(label)};
-			});
-	});
-
-	closeBtn.addEventListener("click", function() {
-		overlay.classList.add("hidden");
-	});
-
-	overlay.addEventListener("click", function(e) {
-		if (e.target === this) overlay.classList.add("hidden");
-	});
-})();
-	`);
+	const script = h(`script#${id}-script`, { type: "text/javascript" }, `(function(){
+const b=document.getElementById("${id}-btn");
+const o=document.getElementById("${id}-overlay");
+const l=document.getElementById("${id}-loading");
+const r=document.getElementById("${id}-raw");
+const d=document.getElementById("${id}-dl");
+const f=document.getElementById("${id}-filename");
+const a=document.getElementById("${id}-dllink");
+const c=document.getElementById("${id}-close");
+const u=${JSON.stringify(apiUrl)};
+const du=u.replace(/[?&]format=json/g,"");
+b.addEventListener("click",function(){
+	b.disabled=true;b.textContent="请求中...";
+	o.classList.remove("hidden");
+	l.classList.remove("hidden");r.classList.add("hidden");d.classList.add("hidden");
+	fetch(u,{headers:{"Accept":"application/json"}})
+	.then(async res=>{
+		const txt=await res.text();
+		let data;try{data=JSON.parse(txt)}catch{}
+		if(data&&data.url){
+			l.classList.add("hidden");r.classList.add("hidden");d.classList.remove("hidden");
+			f.textContent=data.filename||"download";
+			a.href=du;
+		}else{
+			l.classList.add("hidden");r.classList.remove("hidden");d.classList.add("hidden");
+			try{r.textContent=JSON.stringify(JSON.parse(txt),null,2)}catch{r.textContent=txt}
+		}
+	})
+	.catch(err=>{l.classList.add("hidden");r.classList.remove("hidden");d.classList.add("hidden");r.textContent="请求失败:\\n"+err.message})
+	.finally(()=>{b.disabled=false;b.textContent="${label}"});
+});
+c.addEventListener("click",function(){o.classList.add("hidden")});
+o.addEventListener("click",function(e){if(e.target===this)o.classList.add("hidden")});
+})();`);
 
 	return h("div", { class: "my-4" }, [btn, overlay, script]);
 }
