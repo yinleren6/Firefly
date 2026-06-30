@@ -71,4 +71,4 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 
 </details>
 
-::api{url="https://api.cn3.top/api/v1/public/dl/files/mod/factorio/factorio-mod-2.0.77.zip?format=json" label="📦 下载模组"}
+::api{url="https://api.cn3.top/api/v1/public/dl/files/mod/factorio/factorio-mod-2.0.77.zip?format=json" label="📦 获取模组"}
