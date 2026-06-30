@@ -49,7 +49,7 @@ export function ApiButtonComponent(properties, children) {
 		`c.innerHTML='<div class="w-full rounded-xl bg-(--card-bg) border border-(--line-divider) p-4 flex flex-col gap-3">` +
 		`<div class="flex items-center gap-2"><span class="text-sm font-semibold truncate min-w-0 flex-1">'+fn+'</span></div>` +
 		`<div class="flex items-center gap-2 flex-wrap">` +
-		`<button id="${yid}" class="shrink-0 no-styling inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 transition-all hover:scale-105 active:scale-95 transition-all cursor-pointer border-none">下载1</button>` +
+		`<button id="${yid}" class="shrink-0 no-styling inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 hover:scale-105 active:scale-95 transition-all cursor-pointer border-none">下载1</button>` +
 		`<a id="${zid}" href="'+n+'" target="_blank" rel="noopener" class="shrink-0 no-styling text-xs text-(--primary) underline decoration-dashed underline-offset-2 hover:text-(--primary)/80 transition-all">下载2</a>` +
 		`<span id="${pid}" class="text-xs text-neutral-500 shrink-0 whitespace-nowrap"></span></div>` +
 		`<div class="w-full h-2 rounded-full bg-(--primary)/10 overflow-hidden"><div id="${fid}" class="h-full rounded-full bg-(--primary) transition-all duration-200" style="width:0%"></div></div></div>';` +
@@ -63,7 +63,7 @@ export function ApiButtonComponent(properties, children) {
 		`var received=0;while(true){var d=await re.read();if(d.done)break;await ws.write(d.value);received+=d.value.length;` +
 		`if(cl){var pct=Math.round(received/cl*100);F.style.width=pct+'%';P.textContent=fmt(received)+'/'+fmt(cl)+' '+pct+'%'}}` +
 		`await ws.close();F.style.width='100%';P.textContent='下载完成'})}}catch(e1){P.textContent=''}` +
-		`Y.textContent='另存为…';Y.disabled=false;Y._d=false})` +
+		`Y.textContent='下载1';Y.disabled=false;Y._d=false})` +
 		`}else{try{c.innerHTML='<pre class="overflow-auto p-3 text-sm font-mono whitespace-pre-wrap break-all m-0 rounded-xl bg-(--card-bg) border border-(--line-divider) max-h-60">'+JSON.stringify(JSON.parse(l),null,2)+'</pre>'}catch(e){c.textContent=l}}` +
 		`}).catch(function(){c.innerHTML='<span class="text-sm text-red-500">请求失败</span>'})` +
 		`.finally(function(){b.disabled=false;b.textContent='${label}'})})})();`;

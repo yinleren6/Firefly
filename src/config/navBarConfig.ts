@@ -97,6 +97,12 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				external: true,
 				icon: "fa7-brands:github",
 			},
+			{
+				name: "GitHub",
+				url: "https://github.com/CuteLeaf/Firefly",
+				external: true,
+				icon: "fa7-brands:github",
+			},
 			// {
 			// 	name: "Gitee",
 			// 	url: "https://gitee.com/yinleren6/Firefly",
