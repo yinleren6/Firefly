@@ -58,7 +58,7 @@ export function ApiButtonComponent(properties, children) {
 		`await ws.close();F.style.width='100%';P.textContent='下载完成';Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false` +
 		`}).catch(function(e2){P.textContent='下载失败';setTimeout(function(){P.textContent='';Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false},3000)})` +
 		`}else{Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false}}catch(e1){Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false}}` +
-		`else{P.textContent='正在下载...';var I=document.createElement('iframe');I.style.display='none';I.src=n;document.body.appendChild(I);setTimeout(function(){document.body.removeChild(I);Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false;P.textContent=''},3000)}})` +
+		`else{P.textContent='正在下载...';var A=document.createElement('a');A.href=n;A.download=fn;A.style.display='none';document.body.appendChild(A);A.click();document.body.removeChild(A);setTimeout(function(){if(!document.hidden){P.textContent='下载完成'}else{P.textContent=''}Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false},3000)}})` +
 		`}else{try{c.innerHTML='<pre class="overflow-auto p-3 text-sm font-mono whitespace-pre-wrap break-all m-0 rounded-xl bg-(--card-bg) border border-(--line-divider) max-h-60">'+JSON.stringify(JSON.parse(l),null,2)+'</pre>'}catch(e){c.textContent=l}}` +
 		`}).catch(function(){c.innerHTML='<span class="text-sm text-red-500">请求失败</span>'})` +
 		`.finally(function(){b.disabled=false;b.textContent='${label}'})})})();`;
