@@ -40,7 +40,9 @@ export const GET: APIRoute = async ({ url }) => {
 			try {
 				const cached = await kv.get(cacheKey);
 				if (cached) return Response.json(JSON.parse(cached));
-			} catch { /* miss */ }
+			} catch {
+				/* miss */
+			}
 		}
 
 		let result: unknown;
@@ -77,7 +79,10 @@ export const GET: APIRoute = async ({ url }) => {
 			const posts: { path: string; count: number }[] = [];
 			let otherCount = 0;
 			for (const r of merged) {
-				if (r.path === "/posts/{canonicalSlug}/" || r.path.includes("{canonicalSlug}"))
+				if (
+					r.path === "/posts/{canonicalSlug}/" ||
+					r.path.includes("{canonicalSlug}")
+				)
 					continue;
 				if (r.path === "/" || r.path === "/posts/" || r.path === "/post/")
 					continue;
@@ -89,7 +94,8 @@ export const GET: APIRoute = async ({ url }) => {
 			}
 			posts.sort((a, b) => b.count - a.count);
 			const sliced = posts.slice(0, 10);
-			if (otherCount > 0) sliced.push({ path: "/其他页面/", count: otherCount });
+			if (otherCount > 0)
+				sliced.push({ path: "/其他页面/", count: otherCount });
 			result = sliced;
 		} else if (type === "referrer") {
 			const rows = await db
@@ -107,7 +113,9 @@ export const GET: APIRoute = async ({ url }) => {
 					domainMap.set(hostname, (domainMap.get(hostname) || 0) + r.count);
 				} catch {
 					const raw = r.referrer
-						.replace(/^https?:\/\//, "").split("/")[0].replace(/^www\./, "");
+						.replace(/^https?:\/\//, "")
+						.split("/")[0]
+						.replace(/^www\./, "");
 					if (raw) domainMap.set(raw, (domainMap.get(raw) || 0) + r.count);
 				}
 			}
@@ -121,7 +129,9 @@ export const GET: APIRoute = async ({ url }) => {
 
 		// 写缓存（1 小时 TTL）
 		if (kv) {
-			kv.put(cacheKey, JSON.stringify(result), { expirationTtl: CACHE_TTL }).catch(() => {});
+			kv.put(cacheKey, JSON.stringify(result), {
+				expirationTtl: CACHE_TTL,
+			}).catch(() => {});
 		}
 
 		return Response.json(result);
