@@ -49,8 +49,8 @@ export function ApiButtonComponent(properties, children) {
 		`c.innerHTML='<div class="w-full rounded-xl bg-(--card-bg) border border-(--line-divider) p-4 flex flex-col gap-3">` +
 		`<div class="flex items-center gap-2"><span class="text-sm font-semibold truncate min-w-0 flex-1">'+fn+'</span></div>` +
 		`<div class="flex items-center gap-2 flex-wrap">` +
-		`<a id="${zid}" href="'+n+'" target="_blank" rel="noopener" class="shrink-0 no-styling inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 transition-all no-underline">下载</a>` +
-		`<button id="${yid}" class="shrink-0 no-styling inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--card-bg) border border-(--line-divider) text-75 font-semibold text-sm hover:bg-(--btn-card-bg-hover) transition-all cursor-pointer">另存为…</button>` +
+		`<button id="${yid}" class="shrink-0 no-styling inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 transition-all hover:scale-105 active:scale-95 transition-all cursor-pointer border-none">下载1</button>` +
+		`<a id="${zid}" href="'+n+'" target="_blank" rel="noopener" class="shrink-0 no-styling text-xs text-(--primary) underline decoration-dashed underline-offset-2 hover:text-(--primary)/80 transition-all">下载2</a>` +
 		`<span id="${pid}" class="text-xs text-neutral-500 shrink-0 whitespace-nowrap"></span></div>` +
 		`<div class="w-full h-2 rounded-full bg-(--primary)/10 overflow-hidden"><div id="${fid}" class="h-full rounded-full bg-(--primary) transition-all duration-200" style="width:0%"></div></div></div>';` +
 		`document.getElementById('${yid}').addEventListener('click',async function(){` +
