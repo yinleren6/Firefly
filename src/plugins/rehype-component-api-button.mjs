@@ -20,7 +20,6 @@ export function ApiButtonComponent(properties, children) {
 
 	const id = `API${uid()}`;
 	const fid = `${id}-f`;
-	const sid = `${id}-s`;
 	const yid = `${id}-y`;
 	const pid = `${id}-p`;
 
@@ -47,19 +46,25 @@ export function ApiButtonComponent(properties, children) {
 		`var n=m&&(m.url||m.data&&m.data.url);` +
 		`if(n){var fn=m.filename||'download';` +
 		`c.innerHTML='<div class="w-full rounded-xl bg-(--card-bg) border border-(--line-divider) p-4 flex flex-col gap-3"><div class="flex items-center gap-2"><span class="text-sm font-semibold truncate min-w-0 flex-1">'+fn+'</span></div><div class="flex items-center gap-3"><button id="${yid}" class="shrink-0 no-styling inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 transition-all cursor-pointer border-none">⬇ 下载</button><span id="${pid}" class="text-xs text-neutral-500 shrink-0 whitespace-nowrap"></span></div><div class="w-full h-2 rounded-full bg-(--primary)/10 overflow-hidden"><div id="${fid}" class="h-full rounded-full bg-(--primary) transition-all duration-200" style="width:0%"></div></div></div>';` +
-		`document.getElementById('${yid}').addEventListener('click',function(){` +
+		`document.getElementById('${yid}').addEventListener('click',async function(){` +
 		`var Y=document.getElementById('${yid}'),P=document.getElementById('${pid}'),F=document.getElementById('${fid}');` +
-		`if(Y._d)return;Y._d=true;Y.disabled=true;Y.textContent='下载中...';` +
-		`fetch(n).then(async function(r){` +
-		`var cl=parseInt(r.headers.get('Content-Length'))||0,re=r.body.getReader(),chunks=[],received=0;` +
-		`function fmt(n){var u=['B','KB','MB','GB'],i=0;while(n>=1024&&i<3){n/=1024;i++}return n.toFixed(i>0?1:0)+u[i]}` +
-		`while(true){var d=await re.read();if(d.done)break;chunks.push(d.value);received+=d.value.length;` +
+		`if(Y._d)return;Y._d=true;Y.disabled=true;Y.textContent='准备中...';` +
+		`try{var h=window.showSaveFilePicker?await window.showSaveFilePicker({suggestedName:fn}):null}catch(e1){h=null;if(e1.name!='AbortError')P.textContent='选择被取消'}` +
+		`if(h){P.textContent='正在下载...';fetch(n).then(async function(r){` +
+		`var cl=parseInt(r.headers.get('Content-Length'))||0,re=r.body.getReader(),ws=await h.createWritable();` +
+		`function fmt(nn){var u=['B','KB','MB','GB'],i=0;while(nn>=1024&&i<3){nn/=1024;i++}return nn.toFixed(i>0?1:0)+u[i]}` +
+		`var received=0;while(true){var d=await re.read();if(d.done)break;await ws.write(d.value);received+=d.value.length;` +
 		`if(cl){var pct=Math.round(received/cl*100);F.style.width=pct+'%';P.textContent=fmt(received)+'/'+fmt(cl)+' '+pct+'%'}}` +
-		`var blob=new Blob(chunks);` +
-		`if(window.showSaveFilePicker){try{var h=await window.showSaveFilePicker({suggestedName:fn});var ws=await h.createWritable();await ws.write(blob);await ws.close();F.style.width='100%';P.textContent='下载完成'}catch(e1){if(e1.name!='AbortError'){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click();URL.revokeObjectURL(a.href)}}` +
-		`}else{var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click();URL.revokeObjectURL(a.href)}` +
-		`Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false` +
-		`}).catch(function(){Y.textContent='下载失败';setTimeout(function(){Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false},2000)})})` +
+		`await ws.close();F.style.width='100%';P.textContent='下载完成';Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false` +
+		`}).catch(function(e2){P.textContent='下载失败';setTimeout(function(){P.textContent='';Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false},3000)})` +
+		`}else if(!window.showSaveFilePicker){P.textContent='正在下载...';fetch(n).then(async function(r){` +
+		`var cl=parseInt(r.headers.get('Content-Length'))||0,re=r.body.getReader(),chunks=[];` +
+		`function fmt(nn){var u=['B','KB','MB','GB'],i=0;while(nn>=1024&&i<3){nn/=1024;i++}return nn.toFixed(i>0?1:0)+u[i]}` +
+		`var received=0;while(true){var d=await re.read();if(d.done)break;chunks.push(d.value);received+=d.value.length;` +
+		`if(cl){var pct=Math.round(received/cl*100);F.style.width=pct+'%';P.textContent=fmt(received)+'/'+fmt(cl)+' '+pct+'%'}}` +
+		`var blob=new Blob(chunks);var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click();URL.revokeObjectURL(a.href);F.style.width='100%';P.textContent='下载完成';Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false` +
+		`}).catch(function(e2){P.textContent='下载失败';setTimeout(function(){P.textContent='';Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false},3000)})` +
+		`}else{P.textContent='';Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false}})` +
 		`}else{try{c.innerHTML='<pre class="overflow-auto p-3 text-sm font-mono whitespace-pre-wrap break-all m-0 rounded-xl bg-(--card-bg) border border-(--line-divider) max-h-60">'+JSON.stringify(JSON.parse(l),null,2)+'</pre>'}catch(e){c.textContent=l}}` +
 		`}).catch(function(){c.innerHTML='<span class="text-sm text-red-500">请求失败</span>'})` +
 		`.finally(function(){b.disabled=false;b.textContent='${label}'})})})();`;
