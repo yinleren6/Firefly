@@ -19,6 +19,8 @@ async function getKv(): Promise<KVNamespace | null> {
 	}
 }
 
+const CACHE_TTL = 3600; // 1 小时，每天最多 24 次写入
+
 export const GET: APIRoute = async ({ url }) => {
 	try {
 		const db = await getDb();
@@ -27,20 +29,18 @@ export const GET: APIRoute = async ({ url }) => {
 
 		const type = url.searchParams.get("type") || "daily";
 		const days = parseInt(url.searchParams.get("days") || "30");
-		const page = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
 		const dateFilter =
 			days > 0 ? " AND created_at >= DATE('now', ? || ' days')" : "";
 		const dateBind = days > 0 ? [`-${days}`] : [];
 
-		// KV 缓存（不含 page，仅用于首页/默认页）
+		// KV 读缓存
 		const kv = await getKv();
 		const cacheKey = `stats:${type}:${days}`;
-
-		if (page === 1 && kv) {
+		if (kv) {
 			try {
 				const cached = await kv.get(cacheKey);
 				if (cached) return Response.json(JSON.parse(cached));
-			} catch { /* 缓存 miss */ }
+			} catch { /* miss */ }
 		}
 
 		let result: unknown;
@@ -64,7 +64,6 @@ export const GET: APIRoute = async ({ url }) => {
 				)
 				.bind(...dateBind)
 				.all<{ path: string; post_uid: string; count: number }>();
-
 			const uidMap = new Map<string, { path: string; count: number }>();
 			for (const r of rows.results ?? []) {
 				const key = r.post_uid || r.path;
@@ -89,23 +88,18 @@ export const GET: APIRoute = async ({ url }) => {
 				}
 			}
 			posts.sort((a, b) => b.count - a.count);
-
-			// 分页
-			const pageSize = 10;
-			const total = posts.length + (otherCount > 0 ? 1 : 0);
-			const paged = posts.slice((page - 1) * pageSize, page * pageSize);
-			if (otherCount > 0) paged.push({ path: "/其他页面/", count: otherCount });
-			result = { data: paged, total, page, pageSize };
+			const sliced = posts.slice(0, 10);
+			if (otherCount > 0) sliced.push({ path: "/其他页面/", count: otherCount });
+			result = sliced;
 		} else if (type === "referrer") {
 			const rows = await db
 				.prepare(
 					"SELECT referrer, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND referrer != ''" +
 						dateFilter +
-						" GROUP BY referrer ORDER BY count DESC LIMIT 200",
+						" GROUP BY referrer ORDER BY count DESC LIMIT 50",
 				)
 				.bind(...dateBind)
 				.all<{ referrer: string; count: number }>();
-
 			const domainMap = new Map<string, number>();
 			for (const r of rows.results ?? []) {
 				try {
@@ -117,18 +111,17 @@ export const GET: APIRoute = async ({ url }) => {
 					if (raw) domainMap.set(raw, (domainMap.get(raw) || 0) + r.count);
 				}
 			}
-			const sorted = [...domainMap.entries()]
+			result = [...domainMap.entries()]
 				.map(([domain, count]) => ({ domain, count }))
 				.sort((a, b) => b.count - a.count)
-				.slice(0, 20);
-			result = sorted;
+				.slice(0, 10);
 		} else {
 			return Response.json({ error: "unknown type" }, { status: 400 });
 		}
 
-		// 缓存 5 分钟（首页/默认页）
-		if (page === 1 && kv) {
-			kv.put(cacheKey, JSON.stringify(result), { expirationTtl: 300 }).catch(() => {});
+		// 写缓存（1 小时 TTL）
+		if (kv) {
+			kv.put(cacheKey, JSON.stringify(result), { expirationTtl: CACHE_TTL }).catch(() => {});
 		}
 
 		return Response.json(result);
