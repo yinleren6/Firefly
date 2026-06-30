@@ -6,7 +6,6 @@ import { h } from "hastscript";
  * ::api{url="https://..." label="查询"}
  *
  * 响应含 url/filename 时自动显示下载界面，否则显示原始 JSON。
- * 下载按钮使用去掉了 ?format=json 的原始 URL（302 直链下载）。
  */
 export function ApiButtonComponent(properties, children) {
 	if (Array.isArray(children) && children.length !== 0)
@@ -18,11 +17,7 @@ export function ApiButtonComponent(properties, children) {
 	const label = properties.label || "发送请求";
 
 	if (!apiUrl)
-		return h(
-			"div",
-			{ class: "hidden" },
-			'Missing URL. ("url" attribute is required)',
-		);
+		return h("div", { class: "hidden" }, 'Missing URL. ("url" attribute is required)');
 
 	const id = `API${Math.random().toString(36).slice(-6)}`;
 
@@ -37,31 +32,28 @@ export function ApiButtonComponent(properties, children) {
 
 	const rawPre = h(
 		`pre#${id}-raw`,
-		{
-			class:
-				"overflow-auto p-6 text-sm font-mono leading-relaxed whitespace-pre-wrap break-all m-0 hidden",
-		},
+		{ class: "overflow-auto p-5 text-sm font-mono leading-relaxed whitespace-pre-wrap break-all m-0 hidden" },
 		"",
 	);
 
 	const dlCard = h(
 		`div#${id}-dl`,
-		{ class: "p-6 flex flex-col items-center gap-4 hidden" },
+		{ class: "p-6 flex flex-col items-center gap-5 hidden" },
 		[
-			h("div", { class: "flex items-center gap-3 w-full pb-4 border-b border-(--border)" }, [
-				h("div", { class: "w-10 h-10 rounded-lg bg-(--primary)/10 flex items-center justify-center shrink-0" }, [
-					h("span", { class: "text-xl" }, "\u{1F4E6}"),
+			h("div", { class: "flex items-center gap-3 w-full" }, [
+				h("div", { class: "w-10 h-10 rounded-xl bg-(--primary)/10 flex items-center justify-center shrink-0" }, [
+					h("span", { class: "text-lg" }, "\u{1F4E6}"),
 				]),
 				h("div", { class: "flex flex-col min-w-0" }, [
-					h("span", { class: "text-sm text-neutral-500" }, "文件名"),
-					h(`span#${id}-filename`, { class: "font-bold text-base truncate" }, ""),
+					h("span", { class: "text-xs text-neutral-500" }, "文件名"),
+					h(`span#${id}-filename`, { class: "font-semibold text-sm truncate" }, ""),
 				]),
 			]),
 			h(
 				`a#${id}-dllink`,
 				{
 					class:
-						"inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-(--primary) text-white dark:text-black/70 font-medium hover:bg-(--primary)/80 hover:scale-105 active:scale-95 transition-all cursor-pointer text-base no-underline",
+						"inline-flex w-full items-center justify-center gap-2 px-6 py-3 rounded-xl bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 hover:shadow-lg transition-all cursor-pointer no-underline",
 					href: "#",
 					target: "_blank",
 					rel: "noopener",
@@ -73,28 +65,28 @@ export function ApiButtonComponent(properties, children) {
 
 	const loadingEl = h(
 		`div#${id}-loading`,
-		{ class: "p-6 text-center text-sm text-neutral-500" },
-		"正在请求...",
+		{ class: "hidden" },
+		h("div", { class: "flex flex-col items-center gap-3 py-10" }, [
+			h("div", { class: "w-5 h-5 border-2 border-(--primary) border-t-transparent rounded-full animate-spin" }),
+			h("span", { class: "text-sm text-neutral-500" }, "正在请求..."),
+		]),
 	);
 
 	const modalBody = h("div", { class: "overflow-auto" }, [loadingEl, rawPre, dlCard]);
 
 	const modal = h(
 		`div#${id}-modal`,
-		{
-			class:
-				"bg-(--card-bg) rounded-xl shadow-2xl max-w-lg w-[90vw] flex flex-col overflow-hidden",
-		},
+		{ class: "relative w-full max-w-md max-h-[85vh] overflow-hidden rounded-xl sm:rounded-2xl bg-(--card-bg) border border-(--line-divider) shadow-2xl" },
 		[
-			h("div", { class: "flex items-center justify-between px-6 py-4 border-b border-(--border)" }, [
-				h("span", { class: "font-bold text-base" }, "响应结果"),
+			h("div", { class: "flex items-center justify-between px-5 py-3.5 border-b border-(--line-divider)" }, [
+				h("span", { class: "text-sm font-semibold text-75" }, "响应结果"),
 				h(
 					`button#${id}-close`,
 					{
 						class:
-							"w-8 h-8 flex items-center justify-center rounded-lg hover:bg-(--btn-plain-bg-hover) cursor-pointer border-none text-lg",
+							"flex h-7 w-7 items-center justify-center rounded-lg bg-(--btn-regular-bg) text-(--btn-content) hover:bg-(--btn-regular-bg-hover) active:bg-(--btn-regular-bg-active) transition-colors cursor-pointer border-none text-sm leading-none",
 					},
-					"×",
+					"✕",
 				),
 			]),
 			modalBody,
@@ -104,47 +96,48 @@ export function ApiButtonComponent(properties, children) {
 	const overlay = h(
 		`div#${id}-overlay`,
 		{
-			class:
-				"fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden",
-			style: "backdrop-filter: blur(2px)",
+			class: "fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 hidden",
 		},
-		[modal],
+		[h("div", { class: "w-full max-w-md animate-api-in" }, [modal])],
 	);
 
 	const script = h(`script#${id}-script`, { type: "text/javascript" }, `(function(){
-const b=document.getElementById("${id}-btn");
-const o=document.getElementById("${id}-overlay");
-const l=document.getElementById("${id}-loading");
-const r=document.getElementById("${id}-raw");
-const d=document.getElementById("${id}-dl");
+const a=document.getElementById("${id}-btn");
+const b=document.getElementById("${id}-overlay");
+const c=document.getElementById("${id}-loading");
+const d=document.getElementById("${id}-raw");
+const e=document.getElementById("${id}-dl");
 const f=document.getElementById("${id}-filename");
-const a=document.getElementById("${id}-dllink");
-const c=document.getElementById("${id}-close");
-const u=${JSON.stringify(apiUrl)};
-const du=u.replace(/[?&]format=json/g,"");
-b.addEventListener("click",function(){
-	b.disabled=true;b.textContent="请求中...";
-	o.classList.remove("hidden");
-	l.classList.remove("hidden");r.classList.add("hidden");d.classList.add("hidden");
-	fetch(u,{headers:{"Accept":"application/json"}})
-	.then(async res=>{
-		const txt=await res.text();
-		let data;try{data=JSON.parse(txt)}catch{}
-		console.log("[API] Response:",data);const dlUrl=data&&(data.url||data.data?.url);if(dlUrl){
-			l.classList.add("hidden");r.classList.add("hidden");d.classList.remove("hidden");
-			f.textContent=data.filename||"download";
-			a.href=dlUrl||du;
+const g=document.getElementById("${id}-dllink");
+const h=document.getElementById("${id}-close");
+const i=${JSON.stringify(apiUrl)};
+const j=i.replace(/[?&]format=json/g,"");
+a.addEventListener("click",function(){
+	a.disabled=true;a.textContent="请求中...";
+	b.classList.remove("hidden");
+	c.classList.remove("hidden");d.classList.add("hidden");e.classList.add("hidden");
+	fetch(i,{headers:{"Accept":"application/json"}})
+	.then(async k=>{
+		const l=await k.text();
+		let m;try{m=JSON.parse(l)}catch{}
+		const n=m&&(m.url||m.data?.url);
+		if(n){
+			c.classList.add("hidden");d.classList.add("hidden");e.classList.remove("hidden");
+			f.textContent=m.filename||"download";
+			g.href=n;
 		}else{
-			l.classList.add("hidden");r.classList.remove("hidden");d.classList.add("hidden");console.log("[API] No url field, showing raw");
-			try{r.textContent=JSON.stringify(JSON.parse(txt),null,2)}catch{r.textContent=txt}
+			c.classList.add("hidden");d.classList.remove("hidden");e.classList.add("hidden");
+			try{d.textContent=JSON.stringify(JSON.parse(l),null,2)}catch{d.textContent=l}
 		}
 	})
-	.catch(err=>{l.classList.add("hidden");r.classList.remove("hidden");d.classList.add("hidden");r.textContent="请求失败:\\n"+err.message})
-	.finally(()=>{b.disabled=false;b.textContent="${label}"});
+	.catch(k=>{c.classList.add("hidden");d.classList.remove("hidden");e.classList.add("hidden");d.textContent="请求失败:\\n"+k.message})
+	.finally(()=>{a.disabled=false;a.textContent="${label}"});
 });
-c.addEventListener("click",function(){o.classList.add("hidden")});
-o.addEventListener("click",function(e){if(e.target===this)o.classList.add("hidden")});
+h.addEventListener("click",function(){b.classList.add("hidden")});
+b.addEventListener("click",function(k){if(k.target===this)b.classList.add("hidden")});
 })();`);
 
-	return h("div", { class: "my-4" }, [btn, overlay, script]);
+	const style = h(`style#${id}-style`, {}, `@keyframes api-in{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}.animate-api-in{animation:api-in .2s ease-out}`);
+
+	return h("div", { class: "my-4" }, [btn, overlay, style]);
 }
