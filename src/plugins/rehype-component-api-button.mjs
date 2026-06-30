@@ -19,10 +19,10 @@ export function ApiButtonComponent(properties, children) {
 		);
 
 	const id = `API${uid()}`;
-	const wid = `${id}-w`;
+	const fid = `${id}-f`;
+	const sid = `${id}-s`;
 	const yid = `${id}-y`;
 	const pid = `${id}-p`;
-	const bid = `${id}-b`;
 
 	const container = h(
 		`div#${id}`,
@@ -41,20 +41,22 @@ export function ApiButtonComponent(properties, children) {
 
 	const s =
 		`(function(){var b=document.getElementById('${id}-btn'),c=document.getElementById('${id}'),u=${JSON.stringify(apiUrl)};` +
-		`b.addEventListener('click',function(){if(b._f)return;b._f=true;b.disabled=true;b.textContent='获取中...';` +
+		`b.addEventListener('click',function(){b.disabled=true;b.textContent='获取中...';` +
 		`fetch(u,{headers:{'Accept':'application/json'}}).then(async function(k){` +
 		`var l=await k.text(),m;try{m=JSON.parse(l)}catch(e){}` +
 		`var n=m&&(m.url||m.data&&m.data.url);` +
 		`if(n){var fn=m.filename||'download';` +
-		`c.innerHTML='<span id="${wid}" class="inline-flex items-center gap-3 min-w-0 flex-1"><span class="text-sm font-semibold truncate min-w-0 max-w-48">'+fn+'</span><button id="${yid}" class="shrink-0 no-styling inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 transition-all cursor-pointer border-none">⬇ 下载</button></span><div id="${pid}" class="hidden w-full h-1.5 rounded-full bg-(--primary)/10 overflow-hidden"><div id="${bid}" class="h-full rounded-full bg-(--primary) transition-all duration-200" style="width:0%"></div></div>';` +
+		`c.innerHTML='<div class="w-full rounded-xl bg-(--card-bg) border border-(--line-divider) p-4 flex flex-col gap-3"><div class="flex items-center gap-2"><span class="text-sm font-semibold truncate min-w-0 flex-1">'+fn+'</span></div><div class="flex items-center gap-3"><button id="${yid}" class="shrink-0 no-styling inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-semibold text-sm hover:bg-(--primary)/90 transition-all cursor-pointer border-none">⬇ 下载</button><span id="${pid}" class="text-xs text-neutral-500 shrink-0 whitespace-nowrap"></span></div><div class="w-full h-2 rounded-full bg-(--primary)/10 overflow-hidden"><div id="${fid}" class="h-full rounded-full bg-(--primary) transition-all duration-200" style="width:0%"></div></div></div>';` +
 		`document.getElementById('${yid}').addEventListener('click',function(){` +
-		`var Y=document.getElementById('${yid}'),P=document.getElementById('${pid}'),B=document.getElementById('${bid}');` +
+		`var Y=document.getElementById('${yid}'),P=document.getElementById('${pid}'),F=document.getElementById('${fid}');` +
 		`if(Y._d)return;Y._d=true;Y.disabled=true;Y.textContent='下载中...';` +
 		`fetch(n).then(async function(r){` +
 		`var cl=parseInt(r.headers.get('Content-Length'))||0,re=r.body.getReader(),chunks=[],received=0;` +
-		`while(true){var d=await re.read();if(d.done)break;chunks.push(d.value);received+=d.value.length;if(cl){B.style.width=Math.round(received/cl*100)+'%';P.classList.remove('hidden')}}` +
+		`function fmt(n){var u=['B','KB','MB','GB'],i=0;while(n>=1024&&i<3){n/=1024;i++}return n.toFixed(i>0?1:0)+u[i]}` +
+		`while(true){var d=await re.read();if(d.done)break;chunks.push(d.value);received+=d.value.length;` +
+		`if(cl){var pct=Math.round(received/cl*100);F.style.width=pct+'%';P.textContent=fmt(received)+'/'+fmt(cl)+' '+pct+'%'}}` +
 		`var blob=new Blob(chunks);` +
-		`if(window.showSaveFilePicker){try{var h=await window.showSaveFilePicker({suggestedName:fn});var ws=await h.createWritable();await ws.write(blob);await ws.close();B.style.width='100%';setTimeout(function(){P.classList.add('hidden')},1000)}catch(e1){if(e1.name!='AbortError'){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click();URL.revokeObjectURL(a.href)}}` +
+		`if(window.showSaveFilePicker){try{var h=await window.showSaveFilePicker({suggestedName:fn});var ws=await h.createWritable();await ws.write(blob);await ws.close();F.style.width='100%';P.textContent='下载完成'}catch(e1){if(e1.name!='AbortError'){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click();URL.revokeObjectURL(a.href)}}` +
 		`}else{var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;a.click();URL.revokeObjectURL(a.href)}` +
 		`Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false` +
 		`}).catch(function(){Y.textContent='下载失败';setTimeout(function(){Y.textContent='⬇ 下载';Y.disabled=false;Y._d=false},2000)})})` +
