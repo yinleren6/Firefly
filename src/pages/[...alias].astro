@@ -6,13 +6,17 @@ import { getPostUrlBySlug, removeFileExtension } from "@/utils/url-utils";
 export async function getStaticPaths() {
 	const posts = await getSortedPosts();
 	return posts
-		.filter((p) => p.data.alias)
-		.map((p) => {
+		.filter((p) => p.data.alias && p.data.alias.length > 0)
+		.flatMap((p) => {
 			const slug = removeFileExtension(p.id);
-			return {
-				params: { alias: p.data.alias },
-				props: { redirectUrl: getPostUrlBySlug(slug), title: p.data.title },
-			};
+			const aliases = p.data.alias as string[];
+			return aliases.map((alias) => ({
+				params: { alias },
+				props: {
+					redirectUrl: getPostUrlBySlug(slug),
+					title: p.data.title,
+				},
+			}));
 		});
 }
 

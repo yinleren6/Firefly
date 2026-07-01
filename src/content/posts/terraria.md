@@ -3,6 +3,8 @@ title: Terraria
 description: ""
 published: 2026-06-01
 category: 页面
+aliases:
+  - terraria
 tags: []
 draft: false
 password: "576081743"

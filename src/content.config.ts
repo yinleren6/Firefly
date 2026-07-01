@@ -27,7 +27,12 @@ const postsCollection = defineCollection({
 		password: z.string().optional().nullable().default(""),
 		passwordHint: z.string().optional().nullable().default(""),
 		uid: z.string().optional().default(""),
-		alias: z.string().optional().nullable().default(""),
+		alias: z
+			.union([z.string(), z.array(z.string())])
+			.optional()
+			.nullable()
+			.default("")
+			.transform((v) => (v ? (Array.isArray(v) ? v : [v]) : [])),
 
 		/* For internal use */
 		prevTitle: z.string().default(""),

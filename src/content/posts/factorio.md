@@ -3,6 +3,8 @@ title: Factorio
 description: ""
 published: 2026-06-28
 category: 页面
+aliases:
+  - factorio
 tags: []
 draft: false
 password: "809497003"
