@@ -41,8 +41,9 @@ import { i18n } from "@/i18n/translation";
       <div class="flex items-center justify-between mb-3">
         <h3 class="font-bold text-lg">访问趋势</h3>
         <select id="period-select" class="btn-regular text-sm px-3 py-1 rounded-lg">
-          <option value="7">7天</option>
-          <option value="30" selected>30天</option>
+          <option value="3">3天</option>
+          <option value="7" selected>7天</option>
+          <option value="30">30天</option>
           <option value="180">6个月</option>
           <option value="365">1年</option>
           <option value="730">2年</option>
@@ -83,6 +84,7 @@ async function loadDaily(days, suffix) {
   const res = await fetch(`/api/stats/?type=daily&days=${days}${suffix}`);
   if (!res.ok) return;
   const rows = await res.json();
+  dailyRows = rows;
 
   const labels = rows.map(r => r.date.slice(5));
   const pvData = rows.map(r => r.count);
@@ -101,6 +103,8 @@ async function loadDaily(days, suffix) {
 }
 
 let chart = null;
+let selectedDate = "";
+let dailyRows = [];
 function drawChart(labels, pvData, uvData) {
   const canvas = $("chart-daily");
   if (!canvas) return;
@@ -164,7 +168,8 @@ function drawChart(labels, pvData, uvData) {
     const x = pad.left + gap + i * (barW + gap);
     const barH = (v / maxPv) * ch;
     const y = pad.top + ch - barH;
-    bars.push({ x, y, w: barW, h: barH, value: v, label: labels[i] });
+    const fullDate = dailyRows[i]?.date || labels[i];
+    bars.push({ x, y, w: barW, h: barH, value: v, label: labels[i], date: fullDate });
 
     ctx.fillStyle = primary;
     ctx.beginPath();
@@ -265,6 +270,18 @@ function drawChart(labels, pvData, uvData) {
       }
       lastHit = hit;
     }
+    if (selectedDate) {
+      const selBar = bars.find(b => b.date === selectedDate);
+      if (selBar) {
+        ctx.strokeStyle = "oklch(0.6 0.6 0)";
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.roundRect(selBar.x - 2, selBar.y - 2, selBar.w + 4, selBar.h + 4, [5, 5, 0, 0]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
     if (hit) {
       tooltip.style.display = "block";
       tooltip.style.left = mx + "px";
@@ -277,9 +294,28 @@ function drawChart(labels, pvData, uvData) {
     }
   };
   canvas.onmouseleave = function() {
-    ctx.putImageData(snapshot, 0, 0);
+    if (!selectedDate) ctx.putImageData(snapshot, 0, 0);
     lastHit = null;
     tooltip.style.display = "none";
+  };
+  canvas.onclick = function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const dpr = canvas.width / rect.width;
+    const hit = bars.find(b => mx * dpr >= b.x && mx * dpr <= b.x + b.w);
+    if (hit) {
+      if (selectedDate === hit.date) {
+        selectedDate = "";
+      } else {
+        selectedDate = hit.date;
+        loadTopPosts(currentDays, "", selectedDate);
+        loadReferrers(currentDays, "", selectedDate);
+      }
+    } else {
+      selectedDate = "";
+    }
+    drawChart(labels, pvData, uvData);
   };
 }
 
@@ -294,9 +330,10 @@ async function getValidPostPaths() {
   }
 }
 
-async function loadTopPosts(days, suffix) {
+async function loadTopPosts(days, suffix, date) {
+  const dateParam = date ? `&date=${date}` : "";
   const [res, validPaths] = await Promise.all([
-    fetch(`/api/stats/?type=top&days=${days}${suffix}`),
+    fetch(`/api/stats/?type=top&days=${days}${suffix}${dateParam}`),
     getValidPostPaths(),
   ]);
   if (!res.ok) return;
@@ -323,8 +360,9 @@ async function loadTopPosts(days, suffix) {
   }).join("");
 }
 
-async function loadReferrers(days, suffix) {
-  const res = await fetch(`/api/stats/?type=referrer&days=${days}${suffix}`);
+async function loadReferrers(days, suffix, date) {
+  const dateParam = date ? `&date=${date}` : "";
+  const res = await fetch(`/api/stats/?type=referrer&days=${days}${suffix}${dateParam}`);
   if (!res.ok) return;
   const rows = await res.json();
   const el = $("top-referrers");
@@ -356,6 +394,7 @@ document.addEventListener("swup:contentReplaced", initStats);
 
 // period select
 document.getElementById("period-select").addEventListener("change", function() {
+  selectedDate = "";
   loadAll(parseInt(this.value));
 });
 
@@ -363,6 +402,7 @@ document.getElementById("period-select").addEventListener("change", function() {
 document.getElementById("btn-refresh").addEventListener("click", function() {
   const icon = document.getElementById("refresh-icon");
   icon.style.animation = "spin 0.8s linear infinite";
+  selectedDate = "";
   loadAll(currentDays, true).finally(() => {
     icon.style.animation = "";
   });

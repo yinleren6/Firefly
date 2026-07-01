@@ -30,19 +30,28 @@ export const GET: APIRoute = async ({ url }) => {
 		const type = url.searchParams.get("type") || "daily";
 		const days = parseInt(url.searchParams.get("days") || "30");
 		const refresh = url.searchParams.get("refresh") === "1";
-		const dateFilter =
-			days > 0 ? " AND created_at >= DATE('now', ? || ' days')" : "";
-		const dateBind = days > 0 ? [`-${days}`] : [];
+		const date = url.searchParams.get("date") || "";
+		const useExactDate = type !== "daily" && date;
+		const dateFilter = useExactDate
+			? " AND DATE(created_at) = ?"
+			: days > 0
+				? " AND created_at >= DATE('now', ? || ' days')"
+				: "";
+		const dateBind = useExactDate ? [date] : days > 0 ? [`-${days}`] : [];
 
 		// KV 读缓存（判断 syncedAt 时间戳，超过 CACHE_TTL 则重新取）
 		const kv = await getKv();
-		const cacheKey = `stats:${type}:${days}`;
+		const cacheKey = `stats:${type}:${days}:${date}`;
 		if (kv && !refresh) {
 			try {
 				const cached = await kv.get(cacheKey);
 				if (cached) {
 					const parsed = JSON.parse(cached);
-					if (parsed && parsed.syncedAt && Date.now() - parsed.syncedAt < CACHE_TTL * 1000) {
+					if (
+						parsed &&
+						parsed.syncedAt &&
+						Date.now() - parsed.syncedAt < CACHE_TTL * 1000
+					) {
 						return Response.json(parsed.data);
 					}
 				}
@@ -103,6 +112,31 @@ export const GET: APIRoute = async ({ url }) => {
 			if (otherCount > 0)
 				sliced.push({ path: "/其他页面/", count: otherCount });
 			result = sliced;
+		} else if (type === "daily-top") {
+			const rows = await db
+				.prepare(
+					"SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= DATE('now')" +
+						" GROUP BY path, post_uid ORDER BY count DESC LIMIT 20",
+				)
+				.all<{ path: string; post_uid: string; count: number }>();
+			const uidMap = new Map<string, { path: string; count: number }>();
+			for (const r of rows.results ?? []) {
+				const key = r.post_uid || r.path;
+				if (uidMap.has(key)) {
+					uidMap.get(key)!.count += r.count;
+				} else {
+					uidMap.set(key, { path: r.path, count: r.count });
+				}
+			}
+			result = [...uidMap.values()]
+				.filter(
+					(r) =>
+						r.path.startsWith("/posts/") &&
+						!r.path.includes("{canonicalSlug}") &&
+						r.path !== "/posts/",
+				)
+				.sort((a, b) => b.count - a.count)
+				.slice(0, 10);
 		} else if (type === "referrer") {
 			const rows = await db
 				.prepare(
