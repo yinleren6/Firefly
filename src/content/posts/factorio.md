@@ -81,4 +81,4 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 > [!NOTE] 温馨提示
 > 模组文件均来自 factorio 内模组社区,均为社区用户上传，本站不拥有任何文件版权。如有侵权，请联系 i@cn3.top ,我们将在 3 个工作日内移除相关内容。
 
-::api{url="https://api.cn3.top/api/v1/public/dl/files/mod/factorio/factorio-mod-2.0.77.zip?format=json" label="📦 下载当前服务器中的模组"}
+::api{url="https://api.cn3.top/api/v1/public/dl/files/mod/factorio/factorio-2.0.77-mod-2.zip?format=json" label="📦 下载当前服务器中的模组"}
