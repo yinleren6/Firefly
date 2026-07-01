@@ -50,7 +50,7 @@ export const GET: APIRoute = async ({ url }) => {
 		if (type === "daily") {
 			const rows = await db
 				.prepare(
-					"SELECT DATE(created_at) as date, COUNT(*) as count, COUNT(DISTINCT ip_hash) as uv FROM pageviews WHERE is_crawler = 0" +
+					"SELECT DATE(created_at) as date, COUNT(*) as count, COUNT(DISTINCT ip) as uv FROM pageviews WHERE is_crawler = 0" +
 						dateFilter +
 						" GROUP BY DATE(created_at) ORDER BY date ASC",
 				)

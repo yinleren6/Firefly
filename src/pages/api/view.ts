@@ -30,17 +30,6 @@ async function getDb(): Promise<D1Database | null> {
 	}
 }
 
-async function hashIp(ip: string): Promise<string> {
-	const buf = await crypto.subtle.digest(
-		"SHA-256",
-		new TextEncoder().encode(ip),
-	);
-	return Array.from(new Uint8Array(buf))
-		.map((b) => b.toString(16).padStart(2, "0"))
-		.join("")
-		.slice(0, 16);
-}
-
 export const POST: APIRoute = async ({ request }) => {
 	try {
 		const ip = request.headers.get("CF-Connecting-IP") || "";
@@ -59,13 +48,12 @@ export const POST: APIRoute = async ({ request }) => {
 		const ua = request.headers.get("User-Agent") || "";
 		const referrer = request.headers.get("Referer") || "";
 		const isCrawler = BOT_PATTERN.test(ua) ? 1 : 0;
-		const ipHash = ip ? await hashIp(ip) : "";
 
 		await db
 			.prepare(
-				"INSERT INTO pageviews(path, post_uid, ip_hash, referrer, is_crawler) VALUES(?, ?, ?, ?, ?)",
+				"INSERT INTO pageviews(path, post_uid, ip, referrer, is_crawler) VALUES(?, ?, ?, ?, ?)",
 			)
-			.bind(path, uid || "", ipHash, referrer, isCrawler)
+			.bind(path, uid || "", ip, referrer, isCrawler)
 			.run();
 
 		const result = await db
@@ -98,7 +86,7 @@ export const GET: APIRoute = async ({ url }) => {
 					.first<{ total: number }>(),
 				db
 					.prepare(
-						"SELECT COUNT(DISTINCT ip_hash) as count FROM pageviews WHERE is_crawler = 0 AND ip_hash != ''",
+						"SELECT COUNT(DISTINCT ip) as count FROM pageviews WHERE is_crawler = 0 AND ip != ''",
 					)
 					.first<{ count: number }>(),
 			]);
@@ -117,7 +105,7 @@ export const GET: APIRoute = async ({ url }) => {
 				.first<{ count: number }>(),
 			db
 				.prepare(
-					"SELECT COUNT(DISTINCT ip_hash) as count FROM pageviews WHERE path = ? AND is_crawler = 0 AND ip_hash != ''",
+					"SELECT COUNT(DISTINCT ip) as count FROM pageviews WHERE path = ? AND is_crawler = 0 AND ip != ''",
 				)
 				.bind(path)
 				.first<{ count: number }>(),
