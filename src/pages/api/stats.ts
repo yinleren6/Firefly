@@ -19,7 +19,7 @@ async function getKv(): Promise<KVNamespace | null> {
 	}
 }
 
-const CACHE_TTL = 3600; // 1 小时，每天最多 24 次写入
+const CACHE_TTL = 600; // 10 分钟
 
 export const GET: APIRoute = async ({ url }) => {
 	try {
@@ -29,17 +29,23 @@ export const GET: APIRoute = async ({ url }) => {
 
 		const type = url.searchParams.get("type") || "daily";
 		const days = parseInt(url.searchParams.get("days") || "30");
+		const refresh = url.searchParams.get("refresh") === "1";
 		const dateFilter =
 			days > 0 ? " AND created_at >= DATE('now', ? || ' days')" : "";
 		const dateBind = days > 0 ? [`-${days}`] : [];
 
-		// KV 读缓存
+		// KV 读缓存（判断 syncedAt 时间戳，超过 CACHE_TTL 则重新取）
 		const kv = await getKv();
 		const cacheKey = `stats:${type}:${days}`;
-		if (kv) {
+		if (kv && !refresh) {
 			try {
 				const cached = await kv.get(cacheKey);
-				if (cached) return Response.json(JSON.parse(cached));
+				if (cached) {
+					const parsed = JSON.parse(cached);
+					if (parsed && parsed.syncedAt && Date.now() - parsed.syncedAt < CACHE_TTL * 1000) {
+						return Response.json(parsed.data);
+					}
+				}
 			} catch {
 				/* miss */
 			}
@@ -127,10 +133,11 @@ export const GET: APIRoute = async ({ url }) => {
 			return Response.json({ error: "unknown type" }, { status: 400 });
 		}
 
-		// 写缓存（1 小时 TTL）
+		// 写缓存（附带时间戳，KV TTL 设 2 倍作为安全兜底）
 		if (kv) {
-			kv.put(cacheKey, JSON.stringify(result), {
-				expirationTtl: CACHE_TTL,
+			const wrapped = JSON.stringify({ data: result, syncedAt: Date.now() });
+			kv.put(cacheKey, wrapped, {
+				expirationTtl: CACHE_TTL * 2,
 			}).catch(() => {});
 		}
 
