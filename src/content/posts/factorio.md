@@ -38,8 +38,9 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 <details open>
 <summary>展开</summary>
 
-> - 6.30 _增加里程碑 mod_
-> - 6.28 _优化 mod 列表_
+> - 7.2 _增加 3 mod 采矿规划, 油井规划, 间隙穿行_
+> - 6.30 _增加 1 mod 里程碑 mod_
+> - 6.28 _版本 2.0.77_
 
 </details>
 
@@ -59,18 +60,21 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 <details open>
 <summary>展开</summary>
 
-|        模组         |        名称        |  版本  |
-| :-----------------: | :----------------: | :----: |
-|  `AutoDeconstruct`  |      自动拆除      | 1.0.13 |
-|  `BottleneckLite`   |        瓶颈        | 1.3.4  |
-|      `chinese`      | 开源中文汉化语言包 | 2.99.0 |
-| `even-distribution` |      均匀分配      | 2.0.2  |
-|       `flib`        |     异星工场库     | 0.16.5 |
-|    `GUI_Unifyer`    |     GUI 统一器     | 2.0.1  |
-|      `helmod`       |   helmod 量化师    | 2.2.14 |
-| `inventory-repair`  |      库存维修      | 20.0.3 |
-|  `RateCalculator`   |       速率仪       | 3.3.8  |
-|    `Milestones`     |       里程碑       | 1.4.7  |
+|          模组          |        名称        |  版本  |
+| :--------------------: | :----------------: | :----: |
+|   `AutoDeconstruct`    |      自动拆除      | 1.0.13 |
+|    `BottleneckLite`    |        瓶颈        | 1.3.4  |
+|       `chinese`        | 开源中文汉化语言包 | 2.99.0 |
+|  `even-distribution`   |      均匀分配      | 2.0.2  |
+|         `flib`         |     异星工场库     | 0.16.5 |
+|     `GUI_Unifyer`      |     GUI 统一器     | 2.0.1  |
+|        `helmod`        |   helmod 量化师    | 2.2.14 |
+|   `inventory-repair`   |      库存维修      | 20.0.3 |
+|    `RateCalculator`    |       速率仪       | 3.3.8  |
+|      `Milestones`      |       里程碑       | 1.4.7  |
+| `Mining Patch Planner` |   采矿布局规划器   | 1.7.19 |
+|       `P.U.M.P`        |  自动油井规划布局  | 2.1.20 |
+|    `Squeak Through`    |      吱吱穿越      | 0.1.5  |
 
 </details>
 
