@@ -20,6 +20,7 @@ async function getKv(): Promise<KVNamespace | null> {
 }
 
 const CACHE_TTL = 600; // 10 分钟
+const TZ = "+8 hours"; // UTC+8 Asia/Shanghai
 
 export const GET: APIRoute = async ({ url }) => {
 	try {
@@ -33,11 +34,11 @@ export const GET: APIRoute = async ({ url }) => {
 		const date = url.searchParams.get("date") || "";
 		const useExactDate = type !== "daily" && date;
 		const dateFilter = useExactDate
-			? " AND DATE(created_at) = ?"
+			? " AND DATE(created_at, ?) = ?"
 			: days > 0
-				? " AND created_at >= DATE('now', ? || ' days')"
+				? " AND created_at >= DATE('now', ? || ' days', ?)"
 				: "";
-		const dateBind = useExactDate ? [date] : days > 0 ? [`-${days}`] : [];
+		const dateBind = useExactDate ? [TZ, date] : days > 0 ? [TZ, `-${days}`] : [];
 
 		// KV 读缓存（判断 syncedAt 时间戳，超过 CACHE_TTL 则重新取）
 		const kv = await getKv();
@@ -65,9 +66,9 @@ export const GET: APIRoute = async ({ url }) => {
 		if (type === "daily") {
 			const rows = await db
 				.prepare(
-					"SELECT DATE(created_at) as date, COUNT(*) as count, COUNT(DISTINCT ip) as uv FROM pageviews WHERE is_crawler = 0" +
+					"SELECT DATE(created_at, ?) as date, COUNT(*) as count, COUNT(DISTINCT ip) as uv FROM pageviews WHERE is_crawler = 0" +
 						dateFilter +
-						" GROUP BY DATE(created_at) ORDER BY date ASC",
+						" GROUP BY DATE(created_at, ?) ORDER BY date ASC",
 				)
 				.bind(...dateBind)
 				.all<{ date: string; count: number; uv: number }>();
@@ -115,7 +116,7 @@ export const GET: APIRoute = async ({ url }) => {
 		} else if (type === "daily-top") {
 			const rows = await db
 				.prepare(
-					"SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= DATE('now')" +
+					"SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= DATE('now', ?)" +
 						" GROUP BY path, post_uid ORDER BY count DESC LIMIT 20",
 				)
 				.all<{ path: string; post_uid: string; count: number }>();
