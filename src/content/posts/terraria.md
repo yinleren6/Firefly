@@ -37,12 +37,12 @@ uid: b1a7f91e-c47c-4499-94e3-deaea0601509
 <details open>
 <summary>展开</summary>
 
-7.2
+7.2 模组版本更新
 
-> _CalamityEntropy 3.12 -> 3.15_
+> _CalamityEntropy 3.12 -> 3.15_  
 > _InnoVault 1.9.97 -> 1.9.98_
 
-6.28
+6.28 模组版本更新
 
 > _CalamityEntropy 3.11 -> 3.12_
 
