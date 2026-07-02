@@ -20,7 +20,6 @@ async function getKv(): Promise<KVNamespace | null> {
 }
 
 const CACHE_TTL = 600; // 10 分钟
-const TZ = "+8 hours"; // UTC+8 Asia/Shanghai
 
 export const GET: APIRoute = async ({ url }) => {
 	try {
@@ -33,12 +32,19 @@ export const GET: APIRoute = async ({ url }) => {
 		const refresh = url.searchParams.get("refresh") === "1";
 		const date = url.searchParams.get("date") || "";
 		const useExactDate = type !== "daily" && date;
+		// 用 JS 算北京时间今天
+		const now = new Date(Date.now() + 8 * 3600000);
+		const todayStr = now.toISOString().slice(0, 10);
 		const dateFilter = useExactDate
-			? " AND DATE(created_at, ?) = ?"
+			? " AND DATE(created_at) = ?"
 			: days > 0
-				? " AND created_at >= DATE('now', ? || ' days', ?)"
+				? " AND created_at >= ?"
 				: "";
-		const dateBind = useExactDate ? [TZ, date] : days > 0 ? [TZ, `-${days}`] : [];
+		const dateBind = useExactDate
+			? [date]
+			: days > 0
+				? [new Date(now.getTime() - days * 86400000).toISOString().slice(0, 10)]
+				: [];
 
 		// KV 读缓存（判断 syncedAt 时间戳，超过 CACHE_TTL 则重新取）
 		const kv = await getKv();
@@ -66,9 +72,9 @@ export const GET: APIRoute = async ({ url }) => {
 		if (type === "daily") {
 			const rows = await db
 				.prepare(
-					"SELECT DATE(created_at, ?) as date, COUNT(*) as count, COUNT(DISTINCT ip) as uv FROM pageviews WHERE is_crawler = 0" +
+					"SELECT DATE(created_at) as date, COUNT(*) as count, COUNT(DISTINCT ip) as uv FROM pageviews WHERE is_crawler = 0" +
 						dateFilter +
-						" GROUP BY DATE(created_at, ?) ORDER BY date ASC",
+						" GROUP BY DATE(created_at) ORDER BY date ASC",
 				)
 				.bind(...dateBind)
 				.all<{ date: string; count: number; uv: number }>();
@@ -116,9 +122,10 @@ export const GET: APIRoute = async ({ url }) => {
 		} else if (type === "daily-top") {
 			const rows = await db
 				.prepare(
-					"SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= DATE('now', ?)" +
+					"SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= ?" +
 						" GROUP BY path, post_uid ORDER BY count DESC LIMIT 20",
 				)
+				.bind(todayStr)
 				.all<{ path: string; post_uid: string; count: number }>();
 			const uidMap = new Map<string, { path: string; count: number }>();
 			for (const r of rows.results ?? []) {
