@@ -2,6 +2,7 @@
 title: Factorio
 description: ""
 published: 2026-06-28
+updated: 2026-07-02
 category: 页面
 aliases:
   - factorio

@@ -7,7 +7,7 @@
 		"start": "astro dev",
 		"check": "astro check",
 		"build:local": "npx tsx scripts/build-local.ts",
-		"build": "npx tsx scripts/fix-frontmatter.ts && npx tsx scripts/backfill-uid.ts && node scripts/generate-icons.js && npx tsx scripts/generate-lqips.ts && astro build && npx tsx scripts/subset-fonts.ts && pagefind --site dist/client",
+		"build": "npx tsx scripts/fix-frontmatter.ts && npx tsx scripts/sync-updated.ts && npx tsx scripts/backfill-uid.ts && node scripts/generate-icons.js && npx tsx scripts/generate-lqips.ts && astro build && npx tsx scripts/subset-fonts.ts && pagefind --site dist/client",
 		"preview": "astro preview",
 		"astro": "astro",
 		"type-check": "tsc --noEmit --isolatedDeclarations",

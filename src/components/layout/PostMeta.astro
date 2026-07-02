@@ -3,7 +3,7 @@ import { Icon } from "astro-icon/components";
 import { commentConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
-import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { formatDateToYYYYMMDD, formatRelativeTime } from "@/utils/date-utils";
 import { getCategoryUrl, getTagUrl } from "@/utils/url-utils";
 
 export interface Props {
@@ -59,13 +59,16 @@ const path = customPath || (id ? `/posts/${id}` : "");
   }
 
   <!-- publish date -->
-  <div class="flex items-center">
+  <div class="flex items-center gap-1">
     <div class="meta-icon">
       <Icon is:inline
         name="material-symbols:calendar-today-outline-rounded"
         class="text-xl"
       />
     </div>
+    <span class="text-50 text-sm font-medium whitespace-nowrap"
+      >{i18n(I18nKey.publishedAt)}</span
+    >
     <span class="text-50 text-sm font-medium"
       >{formatDateToYYYYMMDD(published)}</span
     >
@@ -74,15 +77,18 @@ const path = customPath || (id ? `/posts/${id}` : "");
   <!-- update date -->
   {
     !hideUpdateDate && updated && updated.getTime() !== published.getTime() && (
-      <div class="flex items-center">
+      <div class="flex items-center gap-1">
         <div class="meta-icon">
           <Icon is:inline
             name="material-symbols:edit-calendar-outline-rounded"
             class="text-xl"
           />
         </div>
-        <span class="text-50 text-sm font-medium">
-          {formatDateToYYYYMMDD(updated)}
+        <span class="text-50 text-sm font-medium whitespace-nowrap"
+          >{i18n(I18nKey.updatedAt)}</span
+        >
+        <span class="text-50 text-sm font-medium" title={formatDateToYYYYMMDD(updated)}>
+          {formatRelativeTime(updated)}
         </span>
       </div>
     )
