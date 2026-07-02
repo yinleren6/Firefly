@@ -72,12 +72,34 @@ import { i18n } from "@/i18n/translation";
 <script>
 function $(id) { return document.getElementById(id); }
 
+function animateAll(parent) {
+  parent.querySelectorAll("[data-val]").forEach(el => {
+    const target = parseInt(el.dataset.val);
+    if (!isNaN(target)) animateNumber(el, target, 400);
+  });
+}
+
+function animateNumber(el, target, duration = 600) {
+  const start = parseInt(el.dataset.val) || 0;
+  const diff = target - start;
+  if (diff === 0) { el.textContent = target.toLocaleString(); return; }
+  const t0 = performance.now();
+  function tick(now) {
+    const p = Math.min((now - t0) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(start + diff * ease).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+    else el.dataset.val = target;
+  }
+  requestAnimationFrame(tick);
+}
+
 async function loadOverview() {
   const res = await fetch("/api/view/");
   if (!res.ok) return;
   const data = await res.json();
-  $("stat-total").textContent = data.total?.toLocaleString() ?? "-";
-  $("stat-uv").textContent = data.uv?.toLocaleString() ?? "-";
+  animateNumber($("stat-total"), data.total ?? 0);
+  animateNumber($("stat-uv"), data.uv ?? 0);
 }
 
 async function loadDaily(days, suffix) {
@@ -93,9 +115,9 @@ async function loadDaily(days, suffix) {
   // today & avg
   if (rows.length > 0) {
     const last = rows[rows.length - 1];
-    $("stat-today").textContent = last.count?.toLocaleString() ?? "-";
+    animateNumber($("stat-today"), last.count ?? 0);
     const avg = Math.round(rows.reduce((s, r) => s + r.count, 0) / rows.length);
-    $("stat-avg").textContent = avg?.toLocaleString() ?? "-";
+    animateNumber($("stat-avg"), avg ?? 0);
   }
 
   // draw chart
@@ -351,13 +373,14 @@ async function loadTopPosts(days, suffix, date) {
     return `<${tag} ${attrs} class="block py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition group">
       <div class="flex items-center justify-between mb-1">
         <span class="text-sm truncate group-hover:text-(--primary) transition">${title}</span>
-        <span class="text-xs font-bold shrink-0 ml-2">${r.count}</span>
+        <span class="text-xs font-bold shrink-0 ml-2" data-val="${r.count}">0</span>
       </div>
       <div class="w-full h-1.5 rounded-full bg-(--primary)/10 overflow-hidden">
         <div class="h-full rounded-full bg-(--primary) transition-all" style="width:${pct}%"></div>
       </div>
     </${tag}>`;
   }).join("");
+  animateAll(el);
 }
 
 async function loadReferrers(days, suffix, date) {
@@ -369,9 +392,10 @@ async function loadReferrers(days, suffix, date) {
   el.innerHTML = rows.map(r =>
     `<div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-(--btn-plain-bg-hover) transition">
       <span class="text-sm truncate">${(r.domain || r.referrer)}</span>
-      <span class="text-sm font-bold shrink-0 ml-2">${r.count}</span>
+      <span class="text-sm font-bold shrink-0 ml-2" data-val="${r.count}">0</span>
     </div>`
   ).join("");
+  animateAll(el);
 }
 
 let currentDays = 30;
