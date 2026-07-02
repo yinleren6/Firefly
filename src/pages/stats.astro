@@ -135,8 +135,8 @@ function drawChart(labels, pvData, uvData) {
   const hue = getComputedStyle(document.documentElement).getPropertyValue("--hue").trim() || "210";
   const primary = `hsl(${hue}, 55%, 55%)`;
 
-  const ctx = canvas.getContext("2d");
-  const w = canvas.width = canvas.parentElement.clientWidth;
+  const ctx = /** @type {HTMLCanvasElement} */ (canvas).getContext("2d");
+  const w = canvas.width = canvas.parentElement?.clientWidth ?? 800;
   const h = canvas.height = 340;
   const pad = { top: 20, right: 60, bottom: 60, left: 50 };
   const cw = w - pad.left - pad.right;
@@ -352,7 +352,7 @@ async function getValidPostPaths() {
   }
 }
 
-async function loadTopPosts(days, suffix, date) {
+async function loadTopPosts(days, suffix, date = "") {
   const dateParam = date ? `&date=${date}` : "";
   const [res, validPaths] = await Promise.all([
     fetch(`/api/stats/?type=top&days=${days}${suffix}${dateParam}`),
@@ -383,7 +383,7 @@ async function loadTopPosts(days, suffix, date) {
   animateAll(el);
 }
 
-async function loadReferrers(days, suffix, date) {
+async function loadReferrers(days, suffix, date = "") {
   const dateParam = date ? `&date=${date}` : "";
   const res = await fetch(`/api/stats/?type=referrer&days=${days}${suffix}${dateParam}`);
   if (!res.ok) return;
@@ -399,7 +399,7 @@ async function loadReferrers(days, suffix, date) {
 }
 
 let currentDays = 30;
-async function loadAll(days, refresh) {
+async function loadAll(days, refresh = false) {
   currentDays = days;
   const suffix = refresh ? "&refresh=1" : "";
   loadDaily(days, suffix);
