@@ -273,8 +273,8 @@ function drawChart(labels, pvData, uvData) {
     if (selectedDate) {
       const selBar = bars.find(b => b.date === selectedDate);
       if (selBar) {
-        ctx.strokeStyle = "oklch(0.6 0.6 0)";
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "oklch(0.6379 0.1424 6.12)";
+        ctx.lineWidth = 2;
         ctx.setLineDash([4, 3]);
         ctx.beginPath();
         ctx.roundRect(selBar.x - 2, selBar.y - 2, selBar.w + 4, selBar.h + 4, [5, 5, 0, 0]);
