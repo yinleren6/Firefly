@@ -32,7 +32,7 @@ import { i18n } from "@/i18n/translation";
       </div>
       <div class="bg-(--primary)/5 rounded-xl p-4 text-center">
         <div class="text-2xl font-bold text-(--primary)" id="stat-avg">-</div>
-        <div class="text-sm text-neutral-500 mt-1">日均(30天)</div>
+        <div class="text-sm text-neutral-500 mt-1">日均(<span id="stat-avg-label">7</span>天)</div>
       </div>
     </div>
 
@@ -402,6 +402,7 @@ let currentDays = 30;
 async function loadAll(days, refresh = false) {
   currentDays = days;
   const suffix = refresh ? "&refresh=1" : "";
+  $("stat-avg-label").textContent = days || "所有";
   loadDaily(days, suffix);
   loadTopPosts(days, suffix);
   loadReferrers(days, suffix);

@@ -12,3 +12,14 @@
     background: color-mix(in oklch, var(--primary) calc(var(--tag-depth) * 30% + 15%), transparent);
     color: white;
 }
+
+mark {
+  background: color-mix(in oklch, var(--primary) 30%, transparent);
+  border-bottom: 2px solid var(--primary);
+  color: inherit;
+  padding: 0.1em 0.3em;
+  border-radius: 0.3em;
+  font-style: normal;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}

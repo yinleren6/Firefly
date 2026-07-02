@@ -18,12 +18,12 @@ uid: b1a7f91e-c47c-4499-94e3-deaea0601509
 <details open>
 <summary>泰拉瑞亚多人联机</summary>
 
-|      版本      |                 1.4.4.9 Tmodloader                  |                     1.4.5.6 Vanilla                     |
-| :------------: | :-------------------------------------------------: | :-----------------------------------------------------: |
-|      地址      |                  `frp-cal.cn3.top`                  |                    `frp-use.cn3.top`                    |
-|      端口      |                       `45678`                       |                         `23003`                         |
-|     联机群     |                     `576081743`                     |   [点击链接加入群聊](https://qm.qq.com/q/nHyctdPxL4)    |
-| 服务器搭建教程 | [原版Tshock教程](/posts/tshock-server-setup#tshock) | [Tmodloader教程](/posts/tshock-server-setup#tmodloader) |
+|      版本      |                   1.4.4.9 Tmodloader                    |                       1.4.5.6 Vanilla                       |
+| :------------: | :-----------------------------------------------------: | :---------------------------------------------------------: |
+|      地址      |                    `frp-cal.cn3.top`                    |                      `frp-use.cn3.top`                      |
+|      端口      |                         `45678`                         |                           `23003`                           |
+|     联机群     |                       `576081743`                       |     [点击链接加入群聊](https://qm.qq.com/q/nHyctdPxL4)      |
+| 服务器搭建教程 | [原版Tshock教程](/posts/泰拉瑞亚服务器搭建教程/#tshock) | [Tmodloader教程](/posts/泰拉瑞亚服务器搭建教程/#tmodloader) |
 
 <details>
 <summary>展开二维码</summary>

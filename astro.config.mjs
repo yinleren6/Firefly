@@ -23,6 +23,7 @@ import rehypeCallouts from "rehype-callouts";
 import rehypeSlug from "rehype-slug";
 import remarkAdmonitionToBlockquoteCallout from "remark-admonition-to-blockquote-callout";
 import remarkDirective from "remark-directive"; /* Handle directives */
+import remarkMark from "./src/plugins/remark-mark.mjs"; /* ==highlight== syntax */
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
 import {
@@ -255,6 +256,7 @@ export default defineConfig({
 				remarkImageGrid,
 				remarkExcerpt,
 				remarkDirective,
+				remarkMark,
 				remarkSectionize,
 				parseDirectiveNode,
 				remarkMermaid,
