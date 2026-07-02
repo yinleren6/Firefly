@@ -1664,6 +1664,7 @@ function trackPageview() {
   if (now - lastTrack < 2000) return;
   lastTrack = now;
   const path = window.location.pathname;
+  if (path.startsWith("/stats/")) return;
   const uidEl = document.getElementById("post-uid");
   const uid = uidEl ? uidEl.dataset.uid : "";
   fetch("/api/view/", {
