@@ -113,9 +113,10 @@ async function loadDaily(days, suffix) {
   const uvData = rows.map(r => r.uv);
 
   // today & avg
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayRow = rows.find(r => r.date === todayStr);
+  animateNumber($("stat-today"), todayRow?.count ?? 0);
   if (rows.length > 0) {
-    const last = rows[rows.length - 1];
-    animateNumber($("stat-today"), last.count ?? 0);
     const avg = Math.round(rows.reduce((s, r) => s + r.count, 0) / rows.length);
     animateNumber($("stat-avg"), avg ?? 0);
   }
