@@ -329,6 +329,8 @@ function drawChart(labels, pvData, uvData) {
     if (hit) {
       if (selectedDate === hit.date) {
         selectedDate = "";
+        loadTopPosts(currentDays);
+        loadReferrers(currentDays);
       } else {
         selectedDate = hit.date;
         loadTopPosts(currentDays, "", selectedDate);
@@ -336,6 +338,8 @@ function drawChart(labels, pvData, uvData) {
       }
     } else {
       selectedDate = "";
+      loadTopPosts(currentDays);
+      loadReferrers(currentDays);
     }
     drawChart(labels, pvData, uvData);
   };
