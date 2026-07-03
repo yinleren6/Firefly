@@ -19,7 +19,7 @@ async function getKv(): Promise<KVNamespace | null> {
 	}
 }
 
-const CACHE_TTL = 600; // 10 分钟
+const CACHE_TTL = 300; // 5 分钟
 
 export const GET: APIRoute = async ({ url }) => {
 	try {
@@ -178,7 +178,7 @@ export const GET: APIRoute = async ({ url }) => {
 		// 写缓存（附带时间戳，KV TTL 设 2 倍作为安全兜底）
 		if (kv) {
 			const wrapped = JSON.stringify({ data: result, syncedAt: Date.now() });
-			kv.put(cacheKey, wrapped, {
+			await kv.put(cacheKey, wrapped, {
 				expirationTtl: CACHE_TTL * 2,
 			}).catch(() => {});
 		}
