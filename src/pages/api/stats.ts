@@ -59,7 +59,7 @@ export const GET: APIRoute = async ({ url }) => {
 						.all<{ date: string; count: number; uv: number }>();
 					result = rows.results ?? [];
 					const toCache = (rows.results ?? []).filter(r => r.date !== todayStr);
-					if (toCache.length) kv.put(cacheKey, JSON.stringify(toCache)).catch(() => {});
+					if (toCache.length) await kv.put(cacheKey, JSON.stringify(toCache)).catch(() => {});
 				}
 			} else {
 				const rows = await db
@@ -69,6 +69,11 @@ export const GET: APIRoute = async ({ url }) => {
 				result = rows.results ?? [];
 			}
 		} else if (type === "top") {
+			if (kv) {
+				const cached = date && date !== todayStr ? await kv.get(`stats:top:${days}:${date}`).catch(() => null) : null;
+				if (cached) { result = JSON.parse(cached); }
+			}
+			if (!result) {
 			const rows = await db
 				.prepare("SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0" + dateFilter + " GROUP BY path, post_uid ORDER BY count DESC LIMIT 100")
 				.bind(...dateBind)
@@ -92,6 +97,8 @@ export const GET: APIRoute = async ({ url }) => {
 			const sliced = posts.slice(0, 10);
 			if (otherCount > 0) sliced.push({ path: "/其他页面/", count: otherCount });
 			result = sliced;
+			if (kv && result) await kv.put(date && date !== todayStr ? `stats:top:${days}:${date}` : `stats:top:${days}`, JSON.stringify(result), { expirationTtl: 3600 }).catch(() => {});
+			}
 		} else if (type === "daily-top") {
 			const rows = await db
 				.prepare("SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= ? GROUP BY path, post_uid ORDER BY count DESC LIMIT 20")
@@ -105,6 +112,11 @@ export const GET: APIRoute = async ({ url }) => {
 			}
 			result = [...uidMap.values()].filter(r => r.path.startsWith("/posts/") && !r.path.includes("{canonicalSlug}") && r.path !== "/posts/").sort((a, b) => b.count - a.count).slice(0, 10);
 		} else if (type === "referrer") {
+			if (kv) {
+				const cached = date && date !== todayStr ? await kv.get(`stats:ref:${days}:${date}`).catch(() => null) : null;
+				if (cached) { result = JSON.parse(cached); }
+			}
+			if (!result) {
 			const rows = await db
 				.prepare("SELECT referrer, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND referrer != ''" + dateFilter + " GROUP BY referrer ORDER BY count DESC LIMIT 50")
 				.bind(...dateBind)
@@ -120,6 +132,8 @@ export const GET: APIRoute = async ({ url }) => {
 				}
 			}
 			result = [...domainMap.entries()].map(([domain, count]) => ({ domain, count })).sort((a, b) => b.count - a.count).slice(0, 10);
+			if (kv && result) await kv.put(date && date !== todayStr ? `stats:ref:${days}:${date}` : `stats:ref:${days}`, JSON.stringify(result), { expirationTtl: 3600 }).catch(() => {});
+			}
 		} else {
 			return Response.json({ error: "unknown type" }, { status: 400 });
 		}
