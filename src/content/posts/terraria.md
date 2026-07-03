@@ -38,9 +38,12 @@ updated: 2026-07-02
 <details open>
 <summary>展开</summary>
 
+7.3 Tmodloader 版本更新
+
+> **Tmodloader** _2026.4.3.0 -> 2026.5.3.0_
+
 7.2 模组版本更新
 
-> **Tmodloader** _2026.4.3.0 -> 2026.5.3.0_  
 > _CalamityEntropy 3.12 -> 3.15_  
 > _InnoVault 1.9.97 -> 1.9.98_
 
