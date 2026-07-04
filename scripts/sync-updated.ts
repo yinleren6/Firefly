@@ -50,7 +50,9 @@ async function main() {
 	// 首次运行（无哈希记录）自动进入 record-only 模式，不误写
 	const isFirstRun = Object.keys(hashStore).length === 0;
 	if (isFirstRun) {
-		console.log("[sync-updated] First run — recording hashes only, no files modified.");
+		console.log(
+			"[sync-updated] First run — recording hashes only, no files modified.",
+		);
 	}
 
 	let updatedCount = 0;
