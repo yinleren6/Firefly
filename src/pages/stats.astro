@@ -102,10 +102,28 @@ async function loadOverview() {
   animateNumber($("stat-uv"), data.uv ?? 0);
 }
 
+function fillMissingDates(rows, days) {
+  if (!rows.length) return rows;
+  const now = new Date(Date.now() + 8 * 3600000);
+  const startDate = days > 0
+    ? new Date(now.getTime() - days * 86400000)
+    : new Date(rows[0].date);
+  const map = new Map(rows.map(r => [r.date, r]));
+  const filled = [];
+  const d = new Date(startDate);
+  while (d <= now) {
+    const dateStr = d.toISOString().slice(0, 10);
+    filled.push(map.get(dateStr) || { date: dateStr, count: 0, uv: 0 });
+    d.setDate(d.getDate() + 1);
+  }
+  return filled;
+}
+
 async function loadDaily(days, suffix) {
   const res = await fetch(`/api/stats/?type=daily&days=${days}${suffix}`);
   if (!res.ok) return;
-  const rows = await res.json();
+  let rows = await res.json();
+  rows = fillMissingDates(rows, days);
   dailyRows = rows;
 
   const labels = rows.map(r => r.date.slice(5));
