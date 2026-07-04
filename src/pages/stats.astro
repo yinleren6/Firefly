@@ -213,36 +213,32 @@ function drawChart(labels, pvData, uvData) {
   });
 
   // UV line + dots + numbers
-  if (uvData.some(v => v > 0)) {
+  ctx.strokeStyle = "oklch(0.6 0.15 250)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  const uvPoints = [];
+  uvData.forEach((v, i) => {
+    const x = pad.left + gap + i * (barW + gap) + barW / 2;
+    const y = pad.top + ch - (v / uvMax) * ch;
+    uvPoints.push({ x, y, value: v });
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  uvPoints.forEach((p) => {
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    ctx.fill();
     ctx.strokeStyle = "oklch(0.6 0.15 250)";
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    const uvPoints = [];
-    uvData.forEach((v, i) => {
-      const x = pad.left + gap + i * (barW + gap) + barW / 2;
-      const y = pad.top + ch - (v / uvMax) * ch;
-      uvPoints.push({ x, y, value: v });
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
     ctx.stroke();
 
-    uvPoints.forEach((p) => {
-      if (p.value > 0) {
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "oklch(0.6 0.15 250)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.fillStyle = "oklch(0.6 0.15 250)";
-        ctx.font = "bold 11px system-ui";
-        ctx.textAlign = "center";
-        ctx.fillText(p.value.toLocaleString(), p.x, p.y - 8);
-      }
-    });
-  }
+    ctx.fillStyle = "oklch(0.6 0.15 250)";
+    ctx.font = "bold 11px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(p.value.toLocaleString(), p.x, p.y - 8);
+  });
 
   // Legend
   const ly = h - 12;
