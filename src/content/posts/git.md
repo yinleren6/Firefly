@@ -3,7 +3,8 @@ title: Git 笔记
 description: 常用 git 命令
 published: 2026-07-04
 image: ""
-tags: []
+tags:
+  - git
 category: "文章"
 alias: []
 lang: zh_CN
