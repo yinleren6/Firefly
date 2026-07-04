@@ -2,7 +2,7 @@
 title: 加群向导
 published: 2026-07-01
 description: 加群向导
-image: ./images/2026/07/pin-1782847876671.webp
+image: ./images/2026/06/pin-1782847876671.webp
 tags:
   - 加群向导
 category: 页面
