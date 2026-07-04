@@ -13,6 +13,8 @@
 		"new-post": "node scripts/new-post.js",
 		"format": "biome format --write ./src",
 		"lint": "biome check --write ./src",
+		"sync-updated": "npx tsx scripts/sync-updated.ts",
+		"sync-updated:record": "npx tsx scripts/sync-updated.ts --record",
 		"preinstall": "npx only-allow pnpm",
 		"icons": "node scripts/generate-icons.js",
 		"lqips": "npx tsx scripts/generate-lqips.ts",

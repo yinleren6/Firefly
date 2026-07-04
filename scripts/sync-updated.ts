@@ -47,11 +47,19 @@ async function main() {
 		/* first run */
 	}
 
+	// 首次运行（无哈希记录）自动进入 record-only 模式，不误写
+	const isFirstRun = Object.keys(hashStore).length === 0;
+	if (isFirstRun) {
+		console.log("[sync-updated] First run — recording hashes only, no files modified.");
+	}
+
 	let updatedCount = 0;
 	const newStore: Record<string, string> = {};
 	const today = formatDate(new Date());
 
 	for (const file of files) {
+		// 统一用 / 作路径分隔符，避免 Windows 反斜杠不匹配
+		const normalFile = file.replace(/\\/g, "/");
 		const fp = path.join(POSTS_DIR, file);
 		const content = fs.readFileSync(fp, "utf8");
 
@@ -64,10 +72,13 @@ async function main() {
 
 		// 计算正文哈希
 		const hash = bodyHash(body);
-		newStore[file] = hash;
+		newStore[normalFile] = hash;
+
+		// record-only 模式或首次运行：不碰 frontmatter
+		if (RECORD_ONLY || isFirstRun) continue;
 
 		// 哈希没变 → 跳过
-		if (hashStore[file] === hash) continue;
+		if (hashStore[normalFile] === hash) continue;
 
 		const pubMatch = frontmatter.match(/^published:\s*(.+)$/m);
 		if (!pubMatch) continue;
@@ -84,7 +95,7 @@ async function main() {
 				);
 				fs.writeFileSync(fp, newContent);
 				updatedCount++;
-				console.log(`  [sync-updated] removed updated: ${file}`);
+				console.log(`  [sync-updated] removed updated: ${normalFile}`);
 			}
 			continue;
 		}
@@ -112,7 +123,7 @@ async function main() {
 			fs.writeFileSync(fp, newContent);
 		}
 		updatedCount++;
-		console.log(`  [sync-updated] ${file} → ${today}`);
+		console.log(`  [sync-updated] ${normalFile} → ${today}`);
 	}
 
 	// 写回哈希记录
