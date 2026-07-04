@@ -2,16 +2,17 @@
 title: Git 笔记
 description: 常用 git 命令
 published: 2026-07-04
-image: ""
+image: ./images/2026/07/git-1783161331740.webp
 tags:
   - git
-category: "文章"
+category: 文章
 alias: []
 lang: zh_CN
 password: ""
 passwordHint: ""
 draft: false
 pinned: 0
+uid: 07303c0b-1f15-46ce-acc4-cf41ee8f61a3
 ---
 
 ## 想删除不再追踪的文件

@@ -2,7 +2,7 @@
 title: 加群向导
 published: 2026-07-01
 description: 加群向导
-image: ./2026/07/banner/pin-1782847876671.webp
+image: ./images/2026/07/pin-1782847876671.webp
 tags:
   - 加群向导
 category: 页面
@@ -13,7 +13,7 @@ passwordHint: ""
 draft: false
 pinned: 999
 uid: dd734027-fcd5-4d6b-bc50-22fd59a2135a
-updated: 2026-07-01
+updated: 2026-07-04
 ---
 
 ## QQ 群
@@ -25,7 +25,7 @@ updated: 2026-07-01
 <details>
 <summary>展开二维码</summary>
 
-![](./images/2026/06/泰拉瑞亚联机群/terraria-1782667476591.webp)
+![](./images/2026/06/terraria-1782667476591.webp)
 
 </details>
 
@@ -36,6 +36,6 @@ updated: 2026-07-01
 <details>
 <summary>展开二维码</summary>
 
-![](./images/2026/06/异星工场联机群/factorio-1782667458861.webp)
+![](./images/2026/06/factorio-1782667458861.webp)
 
 </details>

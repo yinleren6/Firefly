@@ -20,7 +20,7 @@ export interface Props {
 	minutes?: number;
 	showTags?: boolean;
 	customPath?: string;
-	pinned?: boolean;
+	pinned?: boolean | number;
 	password?: boolean;
 }
 
@@ -50,7 +50,7 @@ const path = customPath || (id ? `/posts/${id}` : "");
 >
   <!-- pinned -->
   {
-    pinned && (
+    pinned !== undefined && pinned !== 0 && (
       <div class="pinned-btn flex items-center gap-1 bg-(--btn-regular-bg) text-(--btn-content) rounded-md px-2 py-1.5 font-bold">
         <Icon is:inline name="material-symbols:pinboard" class="text-xl" />
         <span class="text-sm">{i18n(I18nKey.pinned)}</span>

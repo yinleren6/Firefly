@@ -2,7 +2,7 @@
 title: Factorio
 description: ""
 published: 2026-06-28
-updated: 2026-07-03
+updated: 2026-07-04
 category: 页面
 aliases:
   - factorio
@@ -30,7 +30,7 @@ uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 <details>
 <summary>展开二维码</summary>
 
-![](./images/2026/06/异星工场联机群/factorio-1782667458861.webp)
+![](./images/2026/06/factorio-1782667458861.webp)
 
 </details>
 
