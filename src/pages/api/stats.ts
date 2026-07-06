@@ -46,7 +46,7 @@ export const GET: APIRoute = async ({ url }) => {
 
 		if (type === "daily") {
 			if (kv) {
-				const cacheKey = `stats:d:${days}`;
+				const cacheKey = days > 0 ? `stats:d:${startDate}:${days}` : `stats:d:all:${todayStr}`;
 				const cached = await kv.get(cacheKey).catch(() => null);
 				if (cached) {
 					const historical = JSON.parse(cached);
@@ -71,7 +71,11 @@ export const GET: APIRoute = async ({ url }) => {
 						(r) => r.date !== todayStr,
 					);
 					if (toCache.length)
-						await kv.put(cacheKey, JSON.stringify(toCache)).catch(() => {});
+						await kv
+							.put(cacheKey, JSON.stringify(toCache), {
+								expirationTtl: 86400,
+							})
+							.catch(() => {});
 				}
 			} else {
 				const rows = await db
