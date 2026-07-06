@@ -45,19 +45,32 @@ export const GET: APIRoute = async ({ url }) => {
 		let result: unknown;
 
 		if (type === "daily") {
-			if (kv) {
-				const cacheKey = days > 0 ? `stats:d:${startDate}:${days}` : `stats:d:all:${todayStr}`;
-				const cached = await kv.get(cacheKey).catch(() => null);
-				if (cached) {
-					const historical = JSON.parse(cached);
-					const todayRows = await db
-						.prepare(
-							"SELECT DATE(created_at) as date, COUNT(*) as count, COUNT(DISTINCT ip) as uv FROM pageviews WHERE is_crawler = 0 AND DATE(created_at) = ? GROUP BY DATE(created_at)",
-						)
-						.bind(todayStr)
-						.all<{ date: string; count: number; uv: number }>();
-					result = [...historical, ...(todayRows.results ?? [])];
+			if (kv && days > 0) {
+				// 生成范围内的所有日期
+				const dateList: string[] = [];
+				const d = new Date(startDate);
+				while (d <= now) {
+					dateList.push(d.toISOString().slice(0, 10));
+					d.setDate(d.getDate() + 1);
+				}
+
+				// 逐日读取 KV 缓存（并行）
+				const kvEntries = await Promise.all(
+					dateList.map((dateStr) =>
+						kv
+							.get(`stats:d:${dateStr}`)
+							.then((cached) =>
+								cached ? (JSON.parse(cached) as { date: string; count: number; uv: number }) : null,
+							)
+							.catch(() => null),
+					),
+				);
+
+				// 全部命中 → 直接返回
+				if (kvEntries.every((e) => e !== null)) {
+					result = kvEntries as { date: string; count: number; uv: number }[];
 				} else {
+					// 有缺失 → 回退 D1 全量查询
 					const rows = await db
 						.prepare(
 							"SELECT DATE(created_at) as date, COUNT(*) as count, COUNT(DISTINCT ip) as uv FROM pageviews WHERE is_crawler = 0" +
@@ -67,15 +80,16 @@ export const GET: APIRoute = async ({ url }) => {
 						.bind(...dateBind)
 						.all<{ date: string; count: number; uv: number }>();
 					result = rows.results ?? [];
-					const toCache = (rows.results ?? []).filter(
-						(r) => r.date !== todayStr,
-					);
-					if (toCache.length)
-						await kv
-							.put(cacheKey, JSON.stringify(toCache), {
-								expirationTtl: 86400,
-							})
-							.catch(() => {});
+					// 逐日回写 KV（不含今天）
+					for (const row of rows.results ?? []) {
+						if (row.date !== todayStr) {
+							await kv
+								.put(`stats:d:${row.date}`, JSON.stringify(row), {
+									expirationTtl: 86400,
+								})
+								.catch(() => {});
+						}
+					}
 				}
 			} else {
 				const rows = await db
