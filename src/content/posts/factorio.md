@@ -9,7 +9,7 @@ aliases:
 tags: []
 draft: false
 password: "809497003"
-passwordHint: "提示: 来加群一起玩吧 `809497003`"
+passwordHint: "提示: 来加群一起玩吧 809497003"
 lang: zh_CN
 uid: 795ff439-69af-4ec0-9dd8-db60091fb0cc
 ---
