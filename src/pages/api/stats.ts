@@ -60,7 +60,13 @@ export const GET: APIRoute = async ({ url }) => {
 						kv
 							.get(`stats:d:${dateStr}`)
 							.then((cached) =>
-								cached ? (JSON.parse(cached) as { date: string; count: number; uv: number }) : null,
+								cached
+									? (JSON.parse(cached) as {
+											date: string;
+											count: number;
+											uv: number;
+										})
+									: null,
 							)
 							.catch(() => null),
 					),
