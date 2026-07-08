@@ -87,17 +87,29 @@ async function main() {
 		const publishedDate = parseDate(pubMatch[1].trim().replace(/["']/g, ""));
 		if (!publishedDate) continue;
 
-		// 如果今天 <= published 日期，删掉 updated
+		// 如果今天 <= published 日期，把 updated 设为与 published 相同
 		if (today <= formatDate(publishedDate)) {
 			const updMatch = frontmatter.match(/^updated:\s*(.+)$/m);
+			const pubDateStr = formatDate(publishedDate);
 			if (updMatch) {
-				const newContent = content.replace(
-					new RegExp(`^updated:\\s*${updMatch[1].trim()}\\s*$`, "m"),
-					"",
-				);
+				if (updMatch[1].trim() !== pubDateStr) {
+					const newContent = content.replace(
+						/^updated:\s*.+$/m,
+						`updated: ${pubDateStr}`,
+					);
+					fs.writeFileSync(fp, newContent);
+					updatedCount++;
+					console.log(`  [sync-updated] ${normalFile} updated → ${pubDateStr}`);
+				}
+			} else {
+				const insertPos = content.indexOf("---", 3);
+				const newContent =
+					content.slice(0, insertPos) +
+					`updated: ${pubDateStr}\n` +
+					content.slice(insertPos);
 				fs.writeFileSync(fp, newContent);
 				updatedCount++;
-				console.log(`  [sync-updated] removed updated: ${normalFile}`);
+				console.log(`  [sync-updated] ${normalFile} updated → ${pubDateStr}`);
 			}
 			continue;
 		}
