@@ -22,8 +22,7 @@ async function getKv(): Promise<KVNamespace | null> {
 export const GET: APIRoute = async ({ url }) => {
 	try {
 		const db = await getDb();
-		if (!db)
-			return Response.json([]);
+		if (!db) return Response.json([]);
 		const kv = await getKv();
 
 		const type = url.searchParams.get("type") || "daily";

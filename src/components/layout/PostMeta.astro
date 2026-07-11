@@ -210,30 +210,12 @@ const path = customPath || (id ? `/posts/${id}` : "");
 </div>
 
 <script>
-  (function() {
-    const row = document.getElementById("view-count-row");
-    const display = document.getElementById("view-count-display");
-    if (!row || !display) return;
-    const path = display.closest(".post-meta-root")?.querySelector(".waline-pageview-count")?.dataset.path
-      || window.location.pathname;
-    fetch("/api/view/?path=" + encodeURIComponent(path))
-      .then(r => r.json())
-      .then(data => {
-        const count = data.count ?? 0;
-        if (count > 0) {
-          display.textContent = count.toLocaleString();
-          row.style.display = "";
-        }
-      })
-      .catch(() => {});
-  })();
   document.addEventListener("astro:page-load", function() {
     const row = document.getElementById("view-count-row");
     const display = document.getElementById("view-count-display");
     if (!row || !display) return;
     row.style.display = "none";
-    const path = window.location.pathname;
-    fetch("/api/view/?path=" + encodeURIComponent(path))
+    fetch("/api/view/?path=" + encodeURIComponent(window.location.pathname))
       .then(r => r.json())
       .then(data => {
         const count = data.count ?? 0;

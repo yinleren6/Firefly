@@ -83,8 +83,7 @@ export const POST: APIRoute = async ({ request }) => {
 export const GET: APIRoute = async ({ url }) => {
 	try {
 		const db = await getDb();
-		if (!db)
-			return Response.json({ total: 0, uv: 0, count: 0 });
+		if (!db) return Response.json({ total: 0, uv: 0, count: 0 });
 
 		if (!path) {
 			const [total, unique] = await Promise.all([
