@@ -1,4 +1,55 @@
 ---
-export const prerender = false;
-return Astro.redirect("/posts/tools/", 301);
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+
+interface Tool {
+	name: string;
+	desc: string;
+	url: string;
+	icon: string;
+}
+
+const tools: Tool[] = [
+	{
+		name: "SteamID 转换",
+		desc: "STEAM_X:Y:Z、Steam3ID、Steam64 互相转换",
+		url: "/tools/steamid/",
+		icon: "material-symbols:cached",
+	},
+];
 ---
+
+<MainGridLayout title="小工具">
+  <div class="card-base p-6">
+    <h2 class="font-bold text-xl mb-6">🛠️ 小工具</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {
+        tools.map((tool) => (
+          <a
+            href={tool.url}
+            class="group flex flex-col gap-3 p-5 rounded-xl border border-(--border) bg-(--card-bg)
+                   hover:border-(--primary) hover:shadow-sm
+                   transition-all duration-200"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="flex items-center justify-center w-10 h-10 rounded-lg text-xl
+                       bg-(--primary)/10 text-(--primary) group-hover:bg-(--primary) group-hover:text-white
+                       transition-all duration-200"
+              >
+                <Icon is:inline name={tool.icon} />
+              </div>
+              <span class="font-bold text-lg text-(--text) group-hover:text-(--primary) transition-colors">
+                {tool.name}
+              </span>
+            </div>
+            <p class="text-sm text-(--content-meta) leading-relaxed">
+              {tool.desc}
+            </p>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</MainGridLayout>

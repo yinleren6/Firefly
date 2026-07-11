@@ -33,11 +33,27 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		],
 	});
 
-	// 友链
-	links.push(LinkPresets.Friends);
-
 	// 留言板
 	links.push(LinkPresets.Guestbook);
+
+	// 工具（一级）
+	links.push({
+		name: "工具",
+		url: "/tools/",
+		icon: "material-symbols:build",
+		children: [
+			{
+				name: "全部小工具",
+				url: "/tools/",
+				icon: "material-symbols:apps",
+			},
+			{
+				name: "Steam转换",
+				url: "/tools/steamid/",
+				icon: "fa7-brands:steam",
+			},
+		],
+	});
 
 	// 我的及其子菜单
 	links.push({
@@ -50,13 +66,6 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				name: "游戏",
 				url: "/game/",
 				icon: "material-symbols:stadia-controller",
-			},
-
-			// 工具
-			{
-				name: "工具",
-				url: "/tools/",
-				icon: "material-symbols:build",
 			},
 
 			// 相册
@@ -76,21 +85,16 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		url: "#",
 		icon: "material-symbols:info",
 		children: [
-			// 打赏
-			LinkPresets.Sponsor,
-			{ name: "统计", url: "/stats/", icon: "material-symbols:bar-chart" },
 			// 关于页面
 			LinkPresets.About,
-		],
-	});
+			{ name: "统计", url: "/stats/", icon: "material-symbols:bar-chart" },
 
-	// 自定义导航栏链接
-	links.push({
-		name: "链接",
-		url: "#",
-		icon: "material-symbols:link",
-		// 子菜单
-		children: [
+			// 友链
+			LinkPresets.Friends,
+			// 打赏
+			LinkPresets.Sponsor,
+
+			// 外部链接
 			{
 				name: "GitHub",
 				url: "https://github.com/yinleren6/Firefly",
@@ -98,7 +102,7 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 				icon: "fa7-brands:github",
 			},
 			{
-				name: "GitHub",
+				name: "Firefly 主题",
 				url: "https://github.com/CuteLeaf/Firefly",
 				external: true,
 				icon: "fa7-brands:github",

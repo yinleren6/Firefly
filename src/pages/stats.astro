@@ -210,7 +210,7 @@ function drawChart(labels, pvData, uvData) {
     const barH = (v / maxPv) * ch;
     const y = pad.top + ch - barH;
     const fullDate = dailyRows[i]?.date || labels[i];
-    bars.push({ x, y, w: barW, h: barH, value: v, label: labels[i], date: fullDate });
+    bars.push({ x, y, w: barW, h: barH, value: v, uv: uvData[i], label: labels[i], date: fullDate });
 
     ctx.fillStyle = primary;
     ctx.beginPath();
@@ -323,7 +323,7 @@ function drawChart(labels, pvData, uvData) {
       tooltip.style.display = "block";
       tooltip.style.left = mx + "px";
       tooltip.style.top = (my - 10) + "px";
-      tooltip.textContent = hit.label + ": " + hit.value.toLocaleString() + " 次访问";
+      tooltip.textContent = hit.label + "  访问: " + hit.value.toLocaleString() + "  访客: " + (hit.uv ?? 0).toLocaleString();
       canvas.style.cursor = "pointer";
     } else {
       tooltip.style.display = "none";
