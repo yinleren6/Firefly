@@ -7,6 +7,7 @@ interface Tool {
 	desc: string;
 	url: string;
 	icon: string;
+	external?: boolean;
 }
 
 const tools: Tool[] = [
@@ -14,7 +15,21 @@ const tools: Tool[] = [
 		name: "SteamID 转换",
 		desc: "STEAM_X:Y:Z、Steam3ID、Steam64 互相转换",
 		url: "/tools/steamid/",
-		icon: "material-symbols:cached",
+		icon: "fa7-brands:steam",
+	},
+	{
+		name: "求生之路查服",
+		desc: "求生之路网页/APP 服务器查询",
+		url: "https://l.cn3.top/p/123",
+		icon: "material-symbols:travel-explore",
+		external: true,
+	},
+	{
+		name: "增量更新工具",
+		desc: "基于 hdiffz 的 GUI 增量更新小工具",
+		url: "https://github.com/yinleren6/hdiffz_gui_tool",
+		icon: "material-symbols:file-copy",
+		external: true,
 	},
 ];
 ---
@@ -28,6 +43,8 @@ const tools: Tool[] = [
         tools.map((tool) => (
           <a
             href={tool.url}
+            target={tool.external ? "_blank" : undefined}
+            rel={tool.external ? "noopener noreferrer" : undefined}
             class="group flex flex-col gap-3 p-5 rounded-xl border border-(--border) bg-(--card-bg)
                    hover:border-(--primary) hover:shadow-sm
                    transition-all duration-200"
@@ -43,6 +60,9 @@ const tools: Tool[] = [
               <span class="font-bold text-lg text-(--text) group-hover:text-(--primary) transition-colors">
                 {tool.name}
               </span>
+              {tool.external && (
+                <Icon is:inline name="material-symbols:open-in-new" class="text-sm text-(--content-meta) shrink-0" />
+              )}
             </div>
             <p class="text-sm text-(--content-meta) leading-relaxed">
               {tool.desc}
