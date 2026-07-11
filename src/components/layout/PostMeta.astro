@@ -133,6 +133,24 @@ const path = customPath || (id ? `/posts/${id}` : "");
      )
    }
 
+  <!-- 阅读量统计（首页不显示） -->
+  {
+    !isHome && id && (
+      <div class="flex items-center" id="view-count-row" style="display:none">
+        <div class="meta-icon">
+          <Icon is:inline
+            name="material-symbols:visibility-outline-rounded"
+            class="text-xl"
+          />
+        </div>
+        <span class="text-50 text-sm font-medium mr-1">
+          浏览量
+        </span>
+        <span class="text-50 text-sm font-medium" id="view-count-display"></span>
+      </div>
+    )
+  }
+
   <!-- Twikoo访问量统计（首页不显示，且文章访问量统计启用时显示） -->
   {
     !isHome &&
@@ -190,4 +208,41 @@ const path = customPath || (id ? `/posts/${id}` : "");
         )
     }
 </div>
+
+<script>
+  (function() {
+    const row = document.getElementById("view-count-row");
+    const display = document.getElementById("view-count-display");
+    if (!row || !display) return;
+    const path = display.closest(".post-meta-root")?.querySelector(".waline-pageview-count")?.dataset.path
+      || window.location.pathname;
+    fetch("/api/view/?path=" + encodeURIComponent(path))
+      .then(r => r.json())
+      .then(data => {
+        const count = data.count ?? 0;
+        if (count > 0) {
+          display.textContent = count.toLocaleString();
+          row.style.display = "";
+        }
+      })
+      .catch(() => {});
+  })();
+  document.addEventListener("astro:page-load", function() {
+    const row = document.getElementById("view-count-row");
+    const display = document.getElementById("view-count-display");
+    if (!row || !display) return;
+    row.style.display = "none";
+    const path = window.location.pathname;
+    fetch("/api/view/?path=" + encodeURIComponent(path))
+      .then(r => r.json())
+      .then(data => {
+        const count = data.count ?? 0;
+        if (count > 0) {
+          display.textContent = count.toLocaleString();
+          row.style.display = "";
+        }
+      })
+      .catch(() => {});
+  });
+</script>
 
