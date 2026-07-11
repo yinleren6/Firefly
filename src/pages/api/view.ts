@@ -85,6 +85,8 @@ export const GET: APIRoute = async ({ url }) => {
 		const db = await getDb();
 		if (!db) return Response.json({ total: 0, uv: 0, count: 0 });
 
+		const path = url.searchParams.get("path");
+
 		if (!path) {
 			const [total, unique] = await Promise.all([
 				db
