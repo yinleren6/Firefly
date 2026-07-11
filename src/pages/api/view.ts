@@ -33,6 +33,13 @@ async function getDb(): Promise<D1Database | null> {
 export const POST: APIRoute = async ({ request }) => {
 	try {
 		const ip = request.headers.get("CF-Connecting-IP") || "";
+
+		// 本地 wrangler dev 无 CF-Connecting-IP，跳过限流和数据库写入
+		const isLocalDev = !ip;
+		if (isLocalDev) {
+			return Response.json({ count: 0 });
+		}
+
 		const { path, uid } = await request.json();
 		if (!path || typeof path !== "string") {
 			return Response.json({ error: "path is required" }, { status: 400 });
@@ -77,9 +84,7 @@ export const GET: APIRoute = async ({ url }) => {
 	try {
 		const db = await getDb();
 		if (!db)
-			return Response.json({ error: "DB not available" }, { status: 500 });
-
-		const path = url.searchParams.get("path");
+			return Response.json({ total: 0, uv: 0, count: 0 });
 
 		if (!path) {
 			const [total, unique] = await Promise.all([

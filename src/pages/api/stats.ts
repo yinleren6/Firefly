@@ -23,7 +23,7 @@ export const GET: APIRoute = async ({ url }) => {
 	try {
 		const db = await getDb();
 		if (!db)
-			return Response.json({ error: "DB not available" }, { status: 500 });
+			return Response.json([]);
 		const kv = await getKv();
 
 		const type = url.searchParams.get("type") || "daily";
