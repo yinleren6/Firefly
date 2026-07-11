@@ -212,36 +212,7 @@ const relatedPosts = await getRelatedPosts(entry, 5);
           </div>
         )}
       </div>
-      <script>
-      (function() {
-        const path = window.location.pathname;
-        fetch("/api/view/?path=" + encodeURIComponent(path))
-          .then(r => r.json())
-          .then(data => {
-            if (data.count > 0) {
-              const row = document.getElementById("post-view-count");
-              const display = document.getElementById("view-count-display");
-              if (row) row.classList.remove("hidden");
-              if (display) display.textContent = data.count + " 次阅读";
-            }
-          })
-          .catch(() => {});
-      })();
-      document.addEventListener("astro:page-load", function() {
-        const path = window.location.pathname;
-        fetch("/api/view/?path=" + encodeURIComponent(path))
-          .then(r => r.json())
-          .then(data => {
-            if (data.count > 0) {
-              const row = document.getElementById("post-view-count");
-              const display = document.getElementById("view-count-display");
-              if (row) row.classList.remove("hidden");
-              if (display) display.textContent = data.count + " 次阅读";
-            }
-          })
-          .catch(() => {});
-      });
-      </script>
+
 
       <!-- title -->
       <div class="relative onload-animation">
