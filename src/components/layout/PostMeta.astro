@@ -210,7 +210,7 @@ const path = customPath || (id ? `/posts/${id}` : "");
 </div>
 
 <script>
-  document.addEventListener("astro:page-load", function() {
+  function loadViewCount() {
     const row = document.getElementById("view-count-row");
     const display = document.getElementById("view-count-display");
     if (!row || !display) return;
@@ -225,6 +225,8 @@ const path = customPath || (id ? `/posts/${id}` : "");
         }
       })
       .catch(() => {});
-  });
+  }
+  loadViewCount();
+  document.addEventListener("astro:page-load", loadViewCount);
 </script>
 
