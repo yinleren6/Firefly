@@ -1,4 +1,7 @@
 import { setMaxListeners } from "node:events";
+import { copyFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import pkg from "./package.json";
 import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
@@ -63,7 +66,7 @@ const adapter = cloudflare({
 export default defineConfig({
 	site: siteConfig.site_url,
 
-	base: "/",
+	base: "/blog/",
 	trailingSlash: "always",
 
 	// 字体配置 - 只加载实际使用的字体，跳过未引用的以加快构建
@@ -111,6 +114,23 @@ export default defineConfig({
 	},
 
 	integrations: [
+		// 根路径重定向集成：将 public/index.html 复制到输出根目录
+		{
+			name: "root-redirect",
+			hooks: {
+				"astro:build:done": ({ dir }) => {
+					const clientDir = join(fileURLToPath(dir), "..");
+					const src = join(process.cwd(), "public", "index.html");
+					const dest = join(clientDir, "index.html");
+					if (existsSync(src)) {
+						copyFileSync(src, dest);
+						console.log(
+							"✓ Root redirect: /public/index.html → /dist/client/index.html",
+						);
+					}
+				},
+			},
+		},
 		swup({
 			theme: false,
 			animationClass: "transition-swup-", // see https://swup.js.org/options/#animationselector

@@ -29,8 +29,27 @@ function rgbToHex(color: RgbColor): string {
 	return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`;
 }
 
+async function isAnimatedAvif(filePath: string): Promise<boolean> {
+	try {
+		const fd = await fs.open(filePath, "r");
+		const buf = Buffer.alloc(12);
+		await fd.read(buf, 0, 12, 0);
+		await fd.close();
+		// AVIF header: bytes 4-7 = "ftyp", bytes 8-11 = "avis" (animated) or "avif" (still)
+		return buf.toString("ascii", 4, 8) === "ftyp" && buf.toString("ascii", 8, 12) === "avis";
+	} catch {
+		return false;
+	}
+}
+
 async function processImage(imagePath: string): Promise<string | null> {
 	try {
+		// 跳过动画 AVIF（Sharp 不支持解码）
+		if (await isAnimatedAvif(imagePath)) {
+			console.log(`\nSkipping animated AVIF: ${imagePath}`);
+			return null;
+		}
+
 		const { data, info } = await sharp(imagePath)
 			.resize(2, 2, { fit: "fill" })
 			.raw()
