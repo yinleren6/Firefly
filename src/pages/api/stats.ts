@@ -127,30 +127,23 @@ export const GET: APIRoute = async ({ url }) => {
 					.bind(...dateBind)
 					.all<{ path: string; post_uid: string; count: number }>();
 				const uidMap = new Map<string, { path: string; count: number }>();
-				for (const r of rows.results ?? []) {
-					const key = r.post_uid || r.path;
-					if (uidMap.has(key)) uidMap.get(key)!.count += r.count;
-					else uidMap.set(key, { path: r.path, count: r.count });
-				}
-				const merged = [...uidMap.values()];
-				const posts: { path: string; count: number }[] = [];
 				let otherCount = 0;
-				for (const r of merged) {
-					if (
-						r.path === "/posts/{canonicalSlug}/" ||
-						r.path.includes("{canonicalSlug}")
-					)
-						continue;
-					if (r.path === "/" || r.path === "/posts/" || r.path === "/post/")
-						continue;
-					if (r.path.startsWith("/posts/")) posts.push(r);
-					else otherCount += r.count;
+				for (const r of rows.results ?? []) {
+					if (r.path.includes("{canonicalSlug}")) continue;
+					if (r.post_uid) {
+						const key = r.post_uid;
+						if (uidMap.has(key)) uidMap.get(key)!.count += r.count;
+						else uidMap.set(key, { path: r.path, count: r.count });
+					} else {
+						otherCount += r.count;
+					}
 				}
-				posts.sort((a, b) => b.count - a.count);
-				const sliced = posts.slice(0, 10);
+				const posts = [...uidMap.values()]
+					.sort((a, b) => b.count - a.count)
+					.slice(0, 10);
 				if (otherCount > 0)
-					sliced.push({ path: "/其他页面/", count: otherCount });
-				result = sliced;
+					posts.push({ path: "/其他页面/", count: otherCount });
+				result = posts;
 				if (kv && result)
 					await kv
 						.put(
@@ -170,20 +163,23 @@ export const GET: APIRoute = async ({ url }) => {
 				.bind(todayStr)
 				.all<{ path: string; post_uid: string; count: number }>();
 			const uidMap = new Map<string, { path: string; count: number }>();
+			let otherCount = 0;
 			for (const r of rows.results ?? []) {
-				const key = r.post_uid || r.path;
-				if (uidMap.has(key)) uidMap.get(key)!.count += r.count;
-				else uidMap.set(key, { path: r.path, count: r.count });
+				if (r.path.includes("{canonicalSlug}")) continue;
+				if (r.post_uid) {
+					const key = r.post_uid;
+					if (uidMap.has(key)) uidMap.get(key)!.count += r.count;
+					else uidMap.set(key, { path: r.path, count: r.count });
+				} else {
+					otherCount += r.count;
+				}
 			}
-			result = [...uidMap.values()]
-				.filter(
-					(r) =>
-						r.path.startsWith("/posts/") &&
-						!r.path.includes("{canonicalSlug}") &&
-						r.path !== "/posts/",
-				)
+			const dailyPosts = [...uidMap.values()]
 				.sort((a, b) => b.count - a.count)
 				.slice(0, 10);
+			if (otherCount > 0)
+				dailyPosts.push({ path: "/其他页面/", count: otherCount });
+			result = dailyPosts;
 		} else if (type === "referrer") {
 			if (kv) {
 				const cached =

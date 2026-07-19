@@ -52,10 +52,6 @@ export const POST: APIRoute = async ({ request }) => {
 		if (!db)
 			return Response.json({ error: "DB not available" }, { status: 500 });
 
-		// 不统计 /stats/ 页面
-		if (path === "/stats" || path === "/stats/" || path.startsWith("/stats/"))
-			return Response.json({ count: 0 });
-
 		const ua = request.headers.get("User-Agent") || "";
 		const referrer = request.headers.get("Referer") || "";
 		const isCrawler = BOT_PATTERN.test(ua) ? 1 : 0;
@@ -91,7 +87,7 @@ export const GET: APIRoute = async ({ url }) => {
 			const [total, unique] = await Promise.all([
 				db
 					.prepare(
-						"SELECT COUNT(*) as total FROM pageviews WHERE is_crawler = 0 AND path NOT IN ('/', '/stats/', '/posts/', '/post/')",
+						"SELECT COUNT(*) as total FROM pageviews WHERE is_crawler = 0",
 					)
 					.first<{ total: number }>(),
 				db

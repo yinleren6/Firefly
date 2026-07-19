@@ -1,5 +1,4 @@
 ---
-import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@/utils/content-utils";
 import { getPostUrlBySlug, removeFileExtension } from "@/utils/url-utils";
 
@@ -14,34 +13,11 @@ export async function getStaticPaths() {
 				params: { alias },
 				props: {
 					redirectUrl: getPostUrlBySlug(slug),
-					title: p.data.title,
 				},
 			}));
 		});
 }
 
-const { redirectUrl, title } = Astro.props;
-const encodedUrl = encodeURI(redirectUrl);
-const redirectScript = `window.location.replace("${encodedUrl}");`;
+const { redirectUrl } = Astro.props;
+return Astro.redirect(encodeURI(redirectUrl), 301);
 ---
-
-<MainGridLayout title={title}>
-	<div class="flex flex-col items-center justify-center py-24 px-4">
-		<div class="card-base p-8 max-w-md w-full text-center">
-			<div class="w-10 h-10 rounded-xl bg-(--primary)/10 flex items-center justify-center mx-auto mb-4">
-				<svg class="w-5 h-5 text-(--primary)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-				</svg>
-			</div>
-			<h2 class="text-lg font-bold text-75 mb-2">正在跳转</h2>
-			<p class="text-sm text-50 mb-4">
-				即将跳转到 <span class="font-semibold text-(--primary) break-all">{title}</span>
-			</p>
-			<a href={encodedUrl} class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-(--primary) text-white dark:text-black/70 font-medium text-sm hover:bg-(--primary)/80 transition-all no-underline">
-				立即跳转
-			</a>
-		</div>
-	</div>
-</MainGridLayout>
-
-<script set:html={redirectScript}></script>

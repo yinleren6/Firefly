@@ -1,5 +1,5 @@
 import { setMaxListeners } from "node:events";
-import { copyFileSync, existsSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import pkg from "./package.json";
@@ -120,14 +120,22 @@ export default defineConfig({
 			hooks: {
 				"astro:build:done": ({ dir }) => {
 					const clientDir = join(fileURLToPath(dir), "..");
-					const src = join(process.cwd(), "public", "index.html");
 					const dest = join(clientDir, "index.html");
-					if (existsSync(src)) {
-						copyFileSync(src, dest);
-						console.log(
-							"✓ Root redirect: /public/index.html → /dist/client/index.html",
-						);
-					}
+					const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CC 的 Blog</title>
+  <meta http-equiv="refresh" content="0;url=/blog/" />
+  <script>window.location.replace("/blog/");</script>
+</head>
+<body>
+  <p>正在跳转... <a href="/blog/">点击进入 CC 的 Blog</a></p>
+</body>
+</html>`;
+					writeFileSync(dest, html, "utf-8");
+					console.log("✓ Root redirect: written to /dist/client/index.html");
 				},
 			},
 		},

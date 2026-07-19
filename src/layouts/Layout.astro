@@ -1708,7 +1708,6 @@ function trackPageview() {
   if (now - lastTrack < 2000) return;
   lastTrack = now;
   const path = window.location.pathname;
-  if (path.startsWith("/stats/")) return;
   const uidEl = document.getElementById("post-uid");
   const uid = uidEl ? uidEl.dataset.uid : "";
   fetch("/api/view/", {
@@ -1717,7 +1716,6 @@ function trackPageview() {
     body: JSON.stringify({ path, uid }),
   }).catch(() => {});
 }
-trackPageview();
+// astro:page-load 在首次渲染和 SPA 导航后都会触发，一个事件覆盖所有场景
 document.addEventListener("astro:page-load", () => { setTimeout(trackPageview, 200); });
-document.addEventListener("swup:contentReplaced", () => { setTimeout(trackPageview, 200); });
 </script>
