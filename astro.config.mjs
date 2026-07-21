@@ -1,5 +1,5 @@
 import { setMaxListeners } from "node:events";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import pkg from "./package.json";
@@ -136,6 +136,21 @@ export default defineConfig({
 </html>`;
 					writeFileSync(dest, html, "utf-8");
 					console.log("✓ Root redirect: written to /dist/client/index.html");
+
+					// 清理 wrangler.json 中不再支持的 legacy_env 字段
+					const wranglerPath = join(fileURLToPath(dir), "..", "..", "server", "wrangler.json");
+					try {
+						const raw = readFileSync(wranglerPath, "utf-8");
+						if (raw.includes("legacy_env")) {
+							const cleaned = raw.replace(/"legacy_env":(true|false),?\s*/, "");
+							writeFileSync(wranglerPath, cleaned, "utf-8");
+							console.log("✓ Removed legacy_env from wrangler.json");
+						} else {
+							console.log("  legacy_env not found in wrangler.json, skipping");
+						}
+					} catch (e) {
+						console.log("  wrangler.json cleanup skipped:", e.message);
+					}
 				},
 			},
 		},

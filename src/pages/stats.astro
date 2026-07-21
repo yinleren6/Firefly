@@ -38,24 +38,22 @@ import { i18n } from "@/i18n/translation";
 
     <!-- 趋势图 -->
     <div class="mb-8">
-      <div class="flex items-center justify-between mb-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h3 class="font-bold text-lg">访问趋势</h3>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <select id="period-select" class="btn-regular text-sm px-3 py-1 rounded-lg">
-            <option value="6" selected>7天</option>
-            <option value="14">15天</option>
-            <option value="30">1个月</option>
-            <option value="60">2个月</option>
-            <option value="90">3个月</option>
-            <option value="180">6个月</option>
-            <option value="270">9个月</option>
-            <option value="365">1年</option>
+            <optgroup label="天视图">
+              <option value="6" selected>7天</option>
+              <option value="14">15天</option>
+              <option value="30">30天</option>
+            </optgroup>
+            <optgroup label="月视图">
+              <option value="365">1年</option>
+            </optgroup>
           </select>
           <span class="text-50 text-sm">|</span>
-          <input type="date" id="date-start" class="btn-regular text-sm px-2 py-1 rounded-lg w-32" />
-          <span class="text-50 text-xs">~</span>
-          <input type="date" id="date-end" class="btn-regular text-sm px-2 py-1 rounded-lg w-32" />
-          <button id="btn-range-query" class="btn-regular text-sm px-3 py-1 rounded-lg cursor-pointer hover:bg-(--btn-plain-bg-hover) transition">查询</button>
+          <input type="month" id="month-picker" class="btn-regular text-sm px-2 py-1 rounded-lg" />
+          <button id="btn-month-query" class="btn-regular text-sm px-3 py-1 rounded-lg cursor-pointer hover:bg-(--btn-plain-bg-hover) transition">查询</button>
         </div>
       </div>
       <div class="relative" style="height:300px">
@@ -156,11 +154,11 @@ async function loadDaily(days, suffix, start, end) {
   rows = fillMissingDates(rows, days, start, end);
   dailyRows = rows;
 
-  // 30天及以上按月聚合显示
+  // 1年及以上按月聚合显示（自定义区间查询按日显示）
   const totalDays = isRange
     ? Math.round((new Date(end) - new Date(start)) / 86400000)
     : days;
-  const isMonthly = totalDays >= 30;
+  const isMonthly = totalDays >= 365 && !isRange;
   if (isMonthly) rows = aggregateByMonth(rows);
 
   monthlyMode = isMonthly;
@@ -463,7 +461,7 @@ async function loadAll(days, refresh = false, start, end) {
   currentDays = days;
   currentRange = { start: start || "", end: end || "" };
   const suffix = refresh ? "&refresh=1" : "";
-  $("stat-avg-label").textContent = start && end ? `${start}~${end}` : (days || "所有");
+  $("stat-avg-label").textContent = start && end ? `${start}~${end}` : (days >= 365 ? "1年" : days + "天");
   loadDaily(days, suffix, start, end);
   loadTopPosts(days, suffix);
   loadReferrers(days, suffix);
@@ -472,6 +470,10 @@ async function loadAll(days, refresh = false, start, end) {
 function initStats() {
   loadOverview();
   loadAll(7);
+  // 设置月份选择器默认值为当前月
+  const now = new Date(Date.now() + 8 * 3600000);
+  const monthStr = now.toISOString().slice(0, 7);
+  document.getElementById("month-picker").value = monthStr;
 }
 
 initStats();
@@ -485,14 +487,18 @@ document.getElementById("period-select").addEventListener("change", function() {
   loadAll(parseInt(this.value));
 });
 
-// 自定义区间查询
-document.getElementById("btn-range-query").addEventListener("click", function() {
-  const start = document.getElementById("date-start").value;
-  const end = document.getElementById("date-end").value;
-  if (!start || !end) return;
-  if (start > end) { alert("开始日期不能晚于结束日期"); return; }
+// 按月查询
+document.getElementById("btn-month-query").addEventListener("click", function() {
+  const month = document.getElementById("month-picker").value;
+  if (!month) return;
   selectedDate = "";
-  const days = Math.round((new Date(end) - new Date(start)) / 86400000);
+  currentRange = { start: month + "-01", end: month + "-01" };
+  // 计算该月天数
+  const [y, m] = month.split("-").map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+  const start = `${month}-01`;
+  const end = `${month}-${String(lastDay).padStart(2, "0")}`;
+  const days = lastDay;
   loadAll(days, false, start, end);
 });
 
