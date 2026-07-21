@@ -12,8 +12,9 @@ export async function GET() {
 			category: post.data.category || "",
 			password: !!post.data.password,
 		}))
-		// 日历按纯日期排序，忽略置顶
 		.sort((a, b) => b.published - a.published);
 
-	return new Response(JSON.stringify(allPostsData));
+	return new Response(JSON.stringify(allPostsData), {
+		headers: { "Cache-Control": "public, max-age=0, s-maxage=3600" },
+	});
 }

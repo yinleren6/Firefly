@@ -36,7 +36,10 @@ async function isAnimatedAvif(filePath: string): Promise<boolean> {
 		await fd.read(buf, 0, 12, 0);
 		await fd.close();
 		// AVIF header: bytes 4-7 = "ftyp", bytes 8-11 = "avis" (animated) or "avif" (still)
-		return buf.toString("ascii", 4, 8) === "ftyp" && buf.toString("ascii", 8, 12) === "avis";
+		return (
+			buf.toString("ascii", 4, 8) === "ftyp" &&
+			buf.toString("ascii", 8, 12) === "avis"
+		);
 	} catch {
 		return false;
 	}

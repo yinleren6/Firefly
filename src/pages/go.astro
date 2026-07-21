@@ -9,9 +9,7 @@ const targetUrl = urlParam ? decodeURIComponent(urlParam) : null;
 
 let domain = "";
 let isSafe = true;
-const BLOCKED_DOMAINS = [
-	"example.com",
-];
+const BLOCKED_DOMAINS = ["example.com"];
 
 if (targetUrl) {
 	try {

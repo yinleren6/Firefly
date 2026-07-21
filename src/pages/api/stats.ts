@@ -46,7 +46,13 @@ export const GET: APIRoute = async ({ url }) => {
 				: days > 0
 					? " AND created_at >= ?"
 					: "";
-		const dateBind = useExactDate ? [date] : hasRange ? [startDate, endDate + " 23:59:59"] : days > 0 ? [startDate] : [];
+		const dateBind = useExactDate
+			? [date]
+			: hasRange
+				? [startDate, endDate + " 23:59:59"]
+				: days > 0
+					? [startDate]
+					: [];
 
 		let result: unknown;
 
@@ -239,7 +245,9 @@ export const GET: APIRoute = async ({ url }) => {
 			return Response.json({ error: "unknown type" }, { status: 400 });
 		}
 
-		return Response.json(result);
+		return Response.json(result, {
+			headers: { "Cache-Control": "public, max-age=0, s-maxage=300" },
+		});
 	} catch (e) {
 		return Response.json({ error: String(e) }, { status: 500 });
 	}

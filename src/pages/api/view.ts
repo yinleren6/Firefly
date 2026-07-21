@@ -99,6 +99,8 @@ export const GET: APIRoute = async ({ url }) => {
 			return Response.json({
 				total: total?.total ?? 0,
 				uv: unique?.count ?? 0,
+			}, {
+				headers: { "Cache-Control": "public, max-age=0, s-maxage=300" },
 			});
 		}
 

@@ -2,6 +2,7 @@
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
+import { url } from "@/utils/url-utils";
 ---
 
 <MainGridLayout title="访问统计">
@@ -53,7 +54,6 @@ import { i18n } from "@/i18n/translation";
           </select>
           <span class="text-50 text-sm">|</span>
           <input type="month" id="month-picker" class="btn-regular text-sm px-2 py-1 rounded-lg" />
-          <button id="btn-month-query" class="btn-regular text-sm px-3 py-1 rounded-lg cursor-pointer hover:bg-(--btn-plain-bg-hover) transition">查询</button>
         </div>
       </div>
       <div class="relative" style="height:300px">
@@ -75,7 +75,7 @@ import { i18n } from "@/i18n/translation";
   </div>
 </MainGridLayout>
 
-<script>
+<script define:vars={{ allPostMetaUrl: url("/api/allPostMeta.json") }}>
 function $(id) { return document.getElementById(id); }
 
 function animateAll(parent) {
@@ -400,7 +400,7 @@ function drawChart(labels, pvData, uvData) {
 
 async function getValidPostPaths() {
   try {
-    const res = await fetch("/api/allPostMeta.json");
+    const res = await fetch(allPostMetaUrl);
     if (!res.ok) return null;
     const posts = await res.json();
     return new Set(posts.map(p => `/posts/${encodeURIComponent(p.id)}/`));
@@ -487,13 +487,12 @@ document.getElementById("period-select").addEventListener("change", function() {
   loadAll(parseInt(this.value));
 });
 
-// 按月查询
-document.getElementById("btn-month-query").addEventListener("click", function() {
-  const month = document.getElementById("month-picker").value;
+// 按月查询（选择后自动查询）
+document.getElementById("month-picker").addEventListener("change", function() {
+  const month = this.value;
   if (!month) return;
   selectedDate = "";
   currentRange = { start: month + "-01", end: month + "-01" };
-  // 计算该月天数
   const [y, m] = month.split("-").map(Number);
   const lastDay = new Date(y, m, 0).getDate();
   const start = `${month}-01`;

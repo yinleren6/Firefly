@@ -138,7 +138,13 @@ export default defineConfig({
 					console.log("✓ Root redirect: written to /dist/client/index.html");
 
 					// 清理 wrangler.json 中不再支持的 legacy_env 字段
-					const wranglerPath = join(fileURLToPath(dir), "..", "..", "server", "wrangler.json");
+					const wranglerPath = join(
+						fileURLToPath(dir),
+						"..",
+						"..",
+						"server",
+						"wrangler.json",
+					);
 					try {
 						const raw = readFileSync(wranglerPath, "utf-8");
 						if (raw.includes("legacy_env")) {
