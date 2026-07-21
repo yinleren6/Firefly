@@ -2,9 +2,10 @@
 import { sakuraConfig } from "@/config";
 
 const config = sakuraConfig;
+const baseUrl = import.meta.env.BASE_URL;
 ---
 
-<script is:inline define:vars={{ sakuraConfig: config }}>
+<script is:inline define:vars={{ sakuraConfig: config, baseUrl }}>
 		let windowWidth = window.innerWidth;
 		let windowHeight = window.innerHeight;
 
@@ -175,7 +176,7 @@ const config = sakuraConfig;
 
 				// 创建图片对象
 				this.img = new Image();
-				this.img.src = '/assets/images/effects/sakura.png'; // 使用樱花图片
+				this.img.src = baseUrl + 'assets/images/effects/sakura.png';
 
 				// 等待图片加载完成
 				await new Promise((resolve, reject) => {
@@ -342,7 +343,7 @@ const config = sakuraConfig;
 			if (window.sakuraInitialized) {
 				return;
 			}
-			
+
 			// 初始化樱花特效的函数
 			const setupSakura = () => {
 				if (window.sakuraInitialized) return;
@@ -354,7 +355,7 @@ const config = sakuraConfig;
 				initSakura(cfg);
 				window.sakuraInitialized = true;
 			};
-			
+
 			// 页面加载完成后初始化樱花特效
 			if (document.readyState === 'loading') {
 				document.addEventListener('DOMContentLoaded', setupSakura);

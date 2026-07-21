@@ -20,7 +20,7 @@ updated: 2026-07-04
 
 ### 泰拉瑞亚游戏联机群 `576081743`
 
-[服务器信息](/posts/terraria)
+[服务器信息](/blog/posts/terraria/)
 
 <details>
 <summary>展开二维码</summary>
@@ -31,7 +31,7 @@ updated: 2026-07-04
 
 ### 异星工场游戏联机群 `809497003`
 
-[服务器信息](/posts/factorio)
+[服务器信息](/blog/posts/factorio/)
 
 <details>
 <summary>展开二维码</summary>
