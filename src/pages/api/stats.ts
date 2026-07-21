@@ -28,27 +28,35 @@ export const GET: APIRoute = async ({ url }) => {
 		const type = url.searchParams.get("type") || "daily";
 		const days = parseInt(url.searchParams.get("days") || "30");
 		const date = url.searchParams.get("date") || "";
+		const startParam = url.searchParams.get("start") || "";
+		const endParam = url.searchParams.get("end") || "";
 		const useExactDate = type !== "daily" && date;
 		const now = new Date(Date.now() + 8 * 3600000);
 		const todayStr = now.toISOString().slice(0, 10);
-		const startDate = new Date(now.getTime() - days * 86400000)
-			.toISOString()
-			.slice(0, 10);
+		// start/end 参数优先于 days
+		const hasRange = startParam && endParam;
+		const startDate = hasRange
+			? startParam
+			: new Date(now.getTime() - days * 86400000).toISOString().slice(0, 10);
+		const endDate = hasRange ? endParam : todayStr;
 		const dateFilter = useExactDate
 			? " AND DATE(created_at) = ?"
-			: days > 0
-				? " AND created_at >= ?"
-				: "";
-		const dateBind = useExactDate ? [date] : days > 0 ? [startDate] : [];
+			: hasRange
+				? " AND created_at >= ? AND created_at <= ?"
+				: days > 0
+					? " AND created_at >= ?"
+					: "";
+		const dateBind = useExactDate ? [date] : hasRange ? [startDate, endDate + " 23:59:59"] : days > 0 ? [startDate] : [];
 
 		let result: unknown;
 
 		if (type === "daily") {
-			if (kv && days > 0) {
+			if (kv && (days > 0 || hasRange)) {
 				// 生成范围内的所有日期
 				const dateList: string[] = [];
 				const d = new Date(startDate);
-				while (d <= now) {
+				const rangeEnd = new Date(endDate);
+				while (d <= rangeEnd) {
 					dateList.push(d.toISOString().slice(0, 10));
 					d.setDate(d.getDate() + 1);
 				}

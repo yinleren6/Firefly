@@ -40,15 +40,23 @@ import { i18n } from "@/i18n/translation";
     <div class="mb-8">
       <div class="flex items-center justify-between mb-3">
         <h3 class="font-bold text-lg">访问趋势</h3>
-        <select id="period-select" class="btn-regular text-sm px-3 py-1 rounded-lg">
-          <option value="3">3天</option>
-          <option value="7" selected>7天</option>
-          <option value="30">30天</option>
-          <option value="180">6个月</option>
-          <option value="365">1年</option>
-          <option value="730">2年</option>
-          <option value="0">所有时间</option>
-        </select>
+        <div class="flex items-center gap-2">
+          <select id="period-select" class="btn-regular text-sm px-3 py-1 rounded-lg">
+            <option value="6" selected>7天</option>
+            <option value="14">15天</option>
+            <option value="30">1个月</option>
+            <option value="60">2个月</option>
+            <option value="90">3个月</option>
+            <option value="180">6个月</option>
+            <option value="270">9个月</option>
+            <option value="365">1年</option>
+          </select>
+          <span class="text-50 text-sm">|</span>
+          <input type="date" id="date-start" class="btn-regular text-sm px-2 py-1 rounded-lg w-32" />
+          <span class="text-50 text-xs">~</span>
+          <input type="date" id="date-end" class="btn-regular text-sm px-2 py-1 rounded-lg w-32" />
+          <button id="btn-range-query" class="btn-regular text-sm px-3 py-1 rounded-lg cursor-pointer hover:bg-(--btn-plain-bg-hover) transition">查询</button>
+        </div>
       </div>
       <div class="relative" style="height:300px">
         <canvas id="chart-daily"></canvas>
@@ -102,16 +110,19 @@ async function loadOverview() {
   animateNumber($("stat-uv"), data.uv ?? 0);
 }
 
-function fillMissingDates(rows, days) {
+function fillMissingDates(rows, days, start, end) {
   if (!rows.length) return rows;
   const now = new Date(Date.now() + 8 * 3600000);
-  const startDate = days > 0
-    ? new Date(now.getTime() - days * 86400000)
-    : new Date(rows[0].date);
+  const startDate = start
+    ? new Date(start)
+    : days > 0
+      ? new Date(now.getTime() - days * 86400000)
+      : new Date(rows[0].date);
   const map = new Map(rows.map(r => [r.date, r]));
   const filled = [];
   const d = new Date(startDate);
-  while (d <= now) {
+  const endDate = end ? new Date(end) : now;
+  while (d <= endDate) {
     const dateStr = d.toISOString().slice(0, 10);
     filled.push(map.get(dateStr) || { date: dateStr, count: 0, uv: 0 });
     d.setDate(d.getDate() + 1);
@@ -119,23 +130,50 @@ function fillMissingDates(rows, days) {
   return filled;
 }
 
-async function loadDaily(days, suffix) {
-  const res = await fetch(`/api/stats/?type=daily&days=${days}${suffix}`);
+function aggregateByMonth(rows) {
+	const monthMap = new Map();
+	for (const r of rows) {
+		const monthKey = r.date.slice(0, 7);
+		if (monthMap.has(monthKey)) {
+			const m = monthMap.get(monthKey);
+			m.count += r.count;
+			m.uv += r.uv;
+		} else {
+			monthMap.set(monthKey, { date: monthKey, count: r.count, uv: r.uv });
+		}
+	}
+	return [...monthMap.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+async function loadDaily(days, suffix, start, end) {
+  const isRange = start && end;
+  const apiUrl = isRange
+    ? `/api/stats/?type=daily&start=${start}&end=${end}${suffix}`
+    : `/api/stats/?type=daily&days=${days}${suffix}`;
+  const res = await fetch(apiUrl);
   if (!res.ok) return;
   let rows = await res.json();
-  rows = fillMissingDates(rows, days);
+  rows = fillMissingDates(rows, days, start, end);
   dailyRows = rows;
 
-  const labels = rows.map(r => r.date.slice(5));
+  // 30天及以上按月聚合显示
+  const totalDays = isRange
+    ? Math.round((new Date(end) - new Date(start)) / 86400000)
+    : days;
+  const isMonthly = totalDays >= 30;
+  if (isMonthly) rows = aggregateByMonth(rows);
+
+  monthlyMode = isMonthly;
+  const labels = rows.map(r => monthlyMode ? r.date.slice(5) + "月" : r.date.slice(5));
   const pvData = rows.map(r => r.count);
   const uvData = rows.map(r => r.uv);
 
-  // today & avg
+  // today & avg（基于原始每日数据计算，而非聚合数据）
   const todayStr = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
-  const todayRow = rows.find(r => r.date === todayStr);
+  const todayRow = dailyRows.find(r => r.date === todayStr);
   animateNumber($("stat-today"), todayRow?.count ?? 0);
-  if (rows.length > 0) {
-    const avg = Math.round(rows.reduce((s, r) => s + r.count, 0) / rows.length);
+  if (dailyRows.length > 0) {
+    const avg = Math.round(dailyRows.reduce((s, r) => s + r.count, 0) / dailyRows.length);
     animateNumber($("stat-avg"), avg ?? 0);
   }
 
@@ -146,6 +184,7 @@ async function loadDaily(days, suffix) {
 let chart = null;
 let selectedDate = "";
 let dailyRows = [];
+let monthlyMode = false;
 function drawChart(labels, pvData, uvData) {
   const canvas = $("chart-daily");
   if (!canvas) return;
@@ -323,7 +362,7 @@ function drawChart(labels, pvData, uvData) {
       tooltip.style.display = "block";
       tooltip.style.left = mx + "px";
       tooltip.style.top = (my - 10) + "px";
-      tooltip.textContent = hit.label + "  访问: " + hit.value.toLocaleString() + "  访客: " + (hit.uv ?? 0).toLocaleString();
+      tooltip.textContent = hit.label + (monthlyMode ? "  月访问: " : "  访问: ") + hit.value.toLocaleString() + "  访客: " + (hit.uv ?? 0).toLocaleString();
       canvas.style.cursor = "pointer";
     } else {
       tooltip.style.display = "none";
@@ -336,6 +375,7 @@ function drawChart(labels, pvData, uvData) {
     tooltip.style.display = "none";
   };
   canvas.onclick = function(e) {
+    if (monthlyMode) return;
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
@@ -418,11 +458,13 @@ async function loadReferrers(days, suffix, date = "") {
 }
 
 let currentDays = 30;
-async function loadAll(days, refresh = false) {
+let currentRange = { start: "", end: "" };
+async function loadAll(days, refresh = false, start, end) {
   currentDays = days;
+  currentRange = { start: start || "", end: end || "" };
   const suffix = refresh ? "&refresh=1" : "";
-  $("stat-avg-label").textContent = days || "所有";
-  loadDaily(days, suffix);
+  $("stat-avg-label").textContent = start && end ? `${start}~${end}` : (days || "所有");
+  loadDaily(days, suffix, start, end);
   loadTopPosts(days, suffix);
   loadReferrers(days, suffix);
 }
@@ -439,7 +481,19 @@ document.addEventListener("swup:contentReplaced", initStats);
 // period select
 document.getElementById("period-select").addEventListener("change", function() {
   selectedDate = "";
+  currentRange = { start: "", end: "" };
   loadAll(parseInt(this.value));
+});
+
+// 自定义区间查询
+document.getElementById("btn-range-query").addEventListener("click", function() {
+  const start = document.getElementById("date-start").value;
+  const end = document.getElementById("date-end").value;
+  if (!start || !end) return;
+  if (start > end) { alert("开始日期不能晚于结束日期"); return; }
+  selectedDate = "";
+  const days = Math.round((new Date(end) - new Date(start)) / 86400000);
+  loadAll(days, false, start, end);
 });
 
 // refresh button
@@ -447,7 +501,7 @@ document.getElementById("btn-refresh").addEventListener("click", function() {
   const icon = document.getElementById("refresh-icon");
   icon.style.animation = "spin 0.8s linear infinite";
   selectedDate = "";
-  loadAll(currentDays, true).finally(() => {
+  loadAll(currentDays, true, currentRange.start || undefined, currentRange.end || undefined).finally(() => {
     icon.style.animation = "";
   });
 });
