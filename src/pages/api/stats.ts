@@ -132,32 +132,27 @@ export const GET: APIRoute = async ({ url }) => {
 				}
 			}
 			if (!result) {
-				const rows = await db
-					.prepare(
-						"SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0" +
-							dateFilter +
-							" GROUP BY path, post_uid ORDER BY count DESC LIMIT 100",
-					)
-					.bind(...dateBind)
-					.all<{ path: string; post_uid: string; count: number }>();
-				const uidMap = new Map<string, { path: string; count: number }>();
-				let otherCount = 0;
-				for (const r of rows.results ?? []) {
-					if (r.path.includes("{canonicalSlug}")) continue;
-					if (r.post_uid) {
-						const key = r.post_uid;
-						if (uidMap.has(key)) uidMap.get(key)!.count += r.count;
-						else uidMap.set(key, { path: r.path, count: r.count });
-					} else {
-						otherCount += r.count;
-					}
-				}
-				const posts = [...uidMap.values()]
-					.sort((a, b) => b.count - a.count)
-					.slice(0, 10);
+				const [uidRows, otherRow] = await Promise.all([
+					db
+						.prepare(
+							"SELECT post_uid, MAX(path) as path, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND post_uid IS NOT NULL AND post_uid != ''" +
+								dateFilter +
+								" GROUP BY post_uid ORDER BY count DESC LIMIT 10",
+						)
+						.bind(...dateBind)
+						.all<{ path: string; post_uid: string; count: number }>(),
+					db
+						.prepare(
+							"SELECT COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND (post_uid IS NULL OR post_uid = '')" +
+								dateFilter,
+						)
+						.bind(...dateBind)
+						.first<{ count: number }>(),
+				]);
+				result = uidRows.results ?? [];
+				const otherCount = otherRow?.count ?? 0;
 				if (otherCount > 0)
-					posts.push({ path: "/其他页面/", count: otherCount });
-				result = posts;
+					(result as { path: string; count: number }[]).push({ path: "/其他页面/", count: otherCount });
 				if (kv && result)
 					await kv
 						.put(
@@ -170,30 +165,24 @@ export const GET: APIRoute = async ({ url }) => {
 						.catch(() => {});
 			}
 		} else if (type === "daily-top") {
-			const rows = await db
-				.prepare(
-					"SELECT path, post_uid, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= ? GROUP BY path, post_uid ORDER BY count DESC LIMIT 20",
-				)
-				.bind(todayStr)
-				.all<{ path: string; post_uid: string; count: number }>();
-			const uidMap = new Map<string, { path: string; count: number }>();
-			let otherCount = 0;
-			for (const r of rows.results ?? []) {
-				if (r.path.includes("{canonicalSlug}")) continue;
-				if (r.post_uid) {
-					const key = r.post_uid;
-					if (uidMap.has(key)) uidMap.get(key)!.count += r.count;
-					else uidMap.set(key, { path: r.path, count: r.count });
-				} else {
-					otherCount += r.count;
-				}
-			}
-			const dailyPosts = [...uidMap.values()]
-				.sort((a, b) => b.count - a.count)
-				.slice(0, 10);
+			const [uidRows, otherRow] = await Promise.all([
+				db
+					.prepare(
+						"SELECT post_uid, MAX(path) as path, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= ? AND post_uid IS NOT NULL AND post_uid != '' GROUP BY post_uid ORDER BY count DESC LIMIT 10",
+					)
+					.bind(todayStr)
+					.all<{ path: string; post_uid: string; count: number }>(),
+				db
+					.prepare(
+						"SELECT COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND created_at >= ? AND (post_uid IS NULL OR post_uid = '')",
+					)
+					.bind(todayStr)
+					.first<{ count: number }>(),
+			]);
+			result = uidRows.results ?? [];
+			const otherCount = otherRow?.count ?? 0;
 			if (otherCount > 0)
-				dailyPosts.push({ path: "/其他页面/", count: otherCount });
-			result = dailyPosts;
+				(result as { path: string; count: number }[]).push({ path: "/其他页面/", count: otherCount });
 		} else if (type === "referrer") {
 			if (kv) {
 				const cached =

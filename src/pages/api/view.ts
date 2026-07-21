@@ -65,9 +65,9 @@ export const POST: APIRoute = async ({ request }) => {
 
 		const result = await db
 			.prepare(
-				"SELECT COUNT(*) as count FROM pageviews WHERE path = ? AND is_crawler = 0",
+				"SELECT COUNT(*) as count FROM pageviews WHERE post_uid = ? AND is_crawler = 0",
 			)
-			.bind(path)
+			.bind(uid || "")
 			.first<{ count: number }>();
 
 		return Response.json({ count: result?.count ?? 0 });
@@ -81,9 +81,9 @@ export const GET: APIRoute = async ({ url }) => {
 		const db = await getDb();
 		if (!db) return Response.json({ total: 0, uv: 0, count: 0 });
 
-		const path = url.searchParams.get("path");
+		const uid = url.searchParams.get("uid") || "";
 
-		if (!path) {
+		if (!uid) {
 			const [total, unique] = await Promise.all([
 				db
 					.prepare(
@@ -106,16 +106,12 @@ export const GET: APIRoute = async ({ url }) => {
 
 		const [pvResult, uvResult] = await Promise.all([
 			db
-				.prepare(
-					"SELECT COUNT(*) as count FROM pageviews WHERE path = ? AND is_crawler = 0",
-				)
-				.bind(path)
+				.prepare("SELECT COUNT(*) as count FROM pageviews WHERE post_uid = ? AND is_crawler = 0")
+				.bind(uid)
 				.first<{ count: number }>(),
 			db
-				.prepare(
-					"SELECT COUNT(DISTINCT ip) as count FROM pageviews WHERE path = ? AND is_crawler = 0 AND ip != ''",
-				)
-				.bind(path)
+				.prepare("SELECT COUNT(DISTINCT ip) as count FROM pageviews WHERE post_uid = ? AND is_crawler = 0 AND ip != ''")
+				.bind(uid)
 				.first<{ count: number }>(),
 		]);
 

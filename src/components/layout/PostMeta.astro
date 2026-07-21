@@ -215,7 +215,10 @@ const path = customPath || (id ? `/posts/${id}` : "");
     const display = document.getElementById("view-count-display");
     if (!row || !display) return;
     row.style.display = "none";
-    fetch("/api/view/?path=" + encodeURIComponent(window.location.pathname))
+    const uidEl = document.getElementById("post-uid");
+    const uid = uidEl ? uidEl.dataset.uid : "";
+    if (!uid) return;
+    fetch("/api/view/?uid=" + encodeURIComponent(uid))
       .then(r => r.json())
       .then(data => {
         const count = data.count ?? 0;

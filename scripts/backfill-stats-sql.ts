@@ -38,6 +38,10 @@ async function main() {
 		lines.push(
 			`UPDATE pageviews SET post_uid = '${p.uid}' WHERE LOWER(path) = LOWER('/${p.slug}/') AND (post_uid IS NULL OR post_uid = '');`,
 		);
+		// /blog/posts/ 前缀（当前 base 路径）
+		lines.push(
+			`UPDATE pageviews SET post_uid = '${p.uid}' WHERE LOWER(path) = LOWER('/blog/posts/${p.slug}/') AND (post_uid IS NULL OR post_uid = '');`,
+		);
 	}
 
 	const outPath = "scripts/_migrate-stats.sql";
