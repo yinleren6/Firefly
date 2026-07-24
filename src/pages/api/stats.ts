@@ -33,6 +33,8 @@ export const GET: APIRoute = async ({ url }) => {
 		const useExactDate = type !== "daily" && date;
 		const now = new Date(Date.now() + 8 * 3600000);
 		const todayStr = now.toISOString().slice(0, 10);
+		const yesterday = new Date(now.getTime() - 86400000);
+		const yesterdayStr = yesterday.toISOString().slice(0, 10);
 		// start/end 参数优先于 days
 		const hasRange = startParam && endParam;
 		const startDate = hasRange
@@ -103,9 +105,7 @@ export const GET: APIRoute = async ({ url }) => {
 					for (const row of rows.results ?? []) {
 						if (row.date !== todayStr) {
 							await kv
-								.put(`stats:d:${row.date}`, JSON.stringify(row), {
-									expirationTtl: 86400,
-								})
+								.put(`stats:d:${row.date}`, JSON.stringify(row), { expirationTtl: 90000 })
 								.catch(() => {});
 						}
 					}
@@ -122,11 +122,9 @@ export const GET: APIRoute = async ({ url }) => {
 				result = rows.results ?? [];
 			}
 		} else if (type === "top") {
+			const topDate = date || yesterdayStr;
 			if (kv) {
-				const cached =
-					date && date !== todayStr
-						? await kv.get(`stats:top:${days}:${date}`).catch(() => null)
-						: null;
+				const cached = await kv.get(`stats:top:${topDate}`).catch(() => null);
 				if (cached) {
 					result = JSON.parse(cached);
 				}
@@ -135,18 +133,15 @@ export const GET: APIRoute = async ({ url }) => {
 				const [uidRows, otherRow] = await Promise.all([
 					db
 						.prepare(
-							"SELECT post_uid, MAX(path) as path, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND post_uid IS NOT NULL AND post_uid != ''" +
-								dateFilter +
-								" GROUP BY post_uid ORDER BY count DESC LIMIT 10",
+							"SELECT post_uid, MAX(path) as path, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND post_uid IS NOT NULL AND post_uid != '' AND DATE(created_at) = ? GROUP BY post_uid ORDER BY count DESC LIMIT 10",
 						)
-						.bind(...dateBind)
+						.bind(topDate)
 						.all<{ path: string; post_uid: string; count: number }>(),
 					db
 						.prepare(
-							"SELECT COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND (post_uid IS NULL OR post_uid = '')" +
-								dateFilter,
+							"SELECT COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND (post_uid IS NULL OR post_uid = '') AND DATE(created_at) = ?",
 						)
-						.bind(...dateBind)
+						.bind(topDate)
 						.first<{ count: number }>(),
 				]);
 				result = uidRows.results ?? [];
@@ -155,13 +150,7 @@ export const GET: APIRoute = async ({ url }) => {
 					(result as { path: string; count: number }[]).push({ path: "/其他页面/", count: otherCount });
 				if (kv && result)
 					await kv
-						.put(
-							date && date !== todayStr
-								? `stats:top:${days}:${date}`
-								: `stats:top:${days}`,
-							JSON.stringify(result),
-							{ expirationTtl: 3600 },
-						)
+						.put(`stats:top:${topDate}`, JSON.stringify(result), { expirationTtl: 90000 })
 						.catch(() => {});
 			}
 		} else if (type === "daily-top") {
@@ -184,11 +173,9 @@ export const GET: APIRoute = async ({ url }) => {
 			if (otherCount > 0)
 				(result as { path: string; count: number }[]).push({ path: "/其他页面/", count: otherCount });
 		} else if (type === "referrer") {
+			const refDate = date || yesterdayStr;
 			if (kv) {
-				const cached =
-					date && date !== todayStr
-						? await kv.get(`stats:ref:${days}:${date}`).catch(() => null)
-						: null;
+				const cached = await kv.get(`stats:ref:${refDate}`).catch(() => null);
 				if (cached) {
 					result = JSON.parse(cached);
 				}
@@ -196,11 +183,9 @@ export const GET: APIRoute = async ({ url }) => {
 			if (!result) {
 				const rows = await db
 					.prepare(
-						"SELECT referrer, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND referrer != ''" +
-							dateFilter +
-							" GROUP BY referrer ORDER BY count DESC LIMIT 50",
+						"SELECT referrer, COUNT(*) as count FROM pageviews WHERE is_crawler = 0 AND referrer != '' AND DATE(created_at) = ? GROUP BY referrer ORDER BY count DESC LIMIT 50",
 					)
-					.bind(...dateBind)
+					.bind(refDate)
 					.all<{ referrer: string; count: number }>();
 				const domainMap = new Map<string, number>();
 				for (const r of rows.results ?? []) {
@@ -221,13 +206,7 @@ export const GET: APIRoute = async ({ url }) => {
 					.slice(0, 10);
 				if (kv && result)
 					await kv
-						.put(
-							date && date !== todayStr
-								? `stats:ref:${days}:${date}`
-								: `stats:ref:${days}`,
-							JSON.stringify(result),
-							{ expirationTtl: 3600 },
-						)
+						.put(`stats:ref:${refDate}`, JSON.stringify(result), { expirationTtl: 90000 })
 						.catch(() => {});
 			}
 		} else {
