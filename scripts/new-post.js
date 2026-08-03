@@ -51,7 +51,7 @@ image: ''
 tags: []
 category: ''
 draft: false
-lang: ''
+lang: 'zh_CN'
 uid: ${crypto.randomUUID()}
 ---
 `;
