@@ -96,21 +96,28 @@ export const GET: APIRoute = async ({ url }) => {
 					)
 					.first<{ count: number }>(),
 			]);
-			return Response.json({
-				total: total?.total ?? 0,
-				uv: unique?.count ?? 0,
-			}, {
-				headers: { "Cache-Control": "public, max-age=0, s-maxage=300" },
-			});
+			return Response.json(
+				{
+					total: total?.total ?? 0,
+					uv: unique?.count ?? 0,
+				},
+				{
+					headers: { "Cache-Control": "public, max-age=0, s-maxage=300" },
+				},
+			);
 		}
 
 		const [pvResult, uvResult] = await Promise.all([
 			db
-				.prepare("SELECT COUNT(*) as count FROM pageviews WHERE post_uid = ? AND is_crawler = 0")
+				.prepare(
+					"SELECT COUNT(*) as count FROM pageviews WHERE post_uid = ? AND is_crawler = 0",
+				)
 				.bind(uid)
 				.first<{ count: number }>(),
 			db
-				.prepare("SELECT COUNT(DISTINCT ip) as count FROM pageviews WHERE post_uid = ? AND is_crawler = 0 AND ip != ''")
+				.prepare(
+					"SELECT COUNT(DISTINCT ip) as count FROM pageviews WHERE post_uid = ? AND is_crawler = 0 AND ip != ''",
+				)
 				.bind(uid)
 				.first<{ count: number }>(),
 		]);

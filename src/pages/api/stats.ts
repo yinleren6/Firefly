@@ -105,7 +105,9 @@ export const GET: APIRoute = async ({ url }) => {
 					for (const row of rows.results ?? []) {
 						if (row.date !== todayStr) {
 							await kv
-								.put(`stats:d:${row.date}`, JSON.stringify(row), { expirationTtl: 90000 })
+								.put(`stats:d:${row.date}`, JSON.stringify(row), {
+									expirationTtl: 90000,
+								})
 								.catch(() => {});
 						}
 					}
@@ -147,10 +149,15 @@ export const GET: APIRoute = async ({ url }) => {
 				result = uidRows.results ?? [];
 				const otherCount = otherRow?.count ?? 0;
 				if (otherCount > 0)
-					(result as { path: string; count: number }[]).push({ path: "/其他页面/", count: otherCount });
+					(result as { path: string; count: number }[]).push({
+						path: "/其他页面/",
+						count: otherCount,
+					});
 				if (kv && result)
 					await kv
-						.put(`stats:top:${topDate}`, JSON.stringify(result), { expirationTtl: 90000 })
+						.put(`stats:top:${topDate}`, JSON.stringify(result), {
+							expirationTtl: 90000,
+						})
 						.catch(() => {});
 			}
 		} else if (type === "daily-top") {
@@ -171,7 +178,10 @@ export const GET: APIRoute = async ({ url }) => {
 			result = uidRows.results ?? [];
 			const otherCount = otherRow?.count ?? 0;
 			if (otherCount > 0)
-				(result as { path: string; count: number }[]).push({ path: "/其他页面/", count: otherCount });
+				(result as { path: string; count: number }[]).push({
+					path: "/其他页面/",
+					count: otherCount,
+				});
 		} else if (type === "referrer") {
 			const refDate = date || yesterdayStr;
 			if (kv) {
@@ -206,7 +216,9 @@ export const GET: APIRoute = async ({ url }) => {
 					.slice(0, 10);
 				if (kv && result)
 					await kv
-						.put(`stats:ref:${refDate}`, JSON.stringify(result), { expirationTtl: 90000 })
+						.put(`stats:ref:${refDate}`, JSON.stringify(result), {
+							expirationTtl: 90000,
+						})
 						.catch(() => {});
 			}
 		} else {
