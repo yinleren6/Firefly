@@ -4,7 +4,7 @@ import path from "path";
 import readline from "readline";
 
 const POSTS_DIR = "src/content/posts";
-const IMAGE_DIRS = ["src/content/posts/images"];
+const IMAGE_DIRS = ["src/content/posts/images", "src/content/public/assets"];
 
 // 从 markdown 中提取所有图片引用路径（正文 + frontmatter）
 function extractImageRefs(content: string, filePath: string): Set<string> {
