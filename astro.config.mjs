@@ -1,5 +1,5 @@
 import { setMaxListeners } from "node:events";
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import pkg from "./package.json";
@@ -154,10 +154,29 @@ export default defineConfig({
 						} else {
 							console.log("  legacy_env not found in wrangler.json, skipping");
 						}
-					} catch (e) {
-						console.log("  wrangler.json cleanup skipped:", e.message);
+				} catch (e) {
+					console.log("  wrangler.json cleanup skipped:", e.message);
+				}
+
+				// 镜像 alias 重定向页到根目录（自动覆盖所有文章 alias）
+				const blogDir = join(clientDir, "blog");
+				for (const entry of readdirSync(blogDir, { withFileTypes: true })) {
+					if (!entry.isDirectory()) continue;
+					const idx = join(blogDir, entry.name, "index.html");
+					try {
+						const html = readFileSync(idx, "utf-8");
+						// 只镜像 Astro.redirect 生成的 301 页面（含 "Redirecting" 标记）
+						if (html.includes("Redirecting")) {
+							const dest = join(clientDir, entry.name);
+							mkdirSync(dest, { recursive: true });
+							writeFileSync(join(dest, "index.html"), html, "utf-8");
+							console.log(`✓ Root alias mirror: /${entry.name}/`);
+						}
+					} catch {
+						// 非 alias 目录，跳过
 					}
-				},
+				}
+			},
 			},
 		},
 		swup({
